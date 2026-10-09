@@ -1,0 +1,6 @@
+src/data/geography.json
+dist
+node_modules
+.venv
+qa-artifacts
+package-lock.json
