@@ -1953,9 +1953,15 @@ p {
   }
 }
 @media (max-width: 760px) {
-  .atlas { top: 318px; }
-  .view-controls { top: 365px; }
-  .place-label[data-anchor="science"] { margin-left: -78px; }
+  .atlas {
+    top: 318px;
+  }
+  .view-controls {
+    top: 365px;
+  }
+  .place-label[data-anchor="science"] {
+    margin-left: -78px;
+  }
 }
 @media (max-height: 680px) and (max-width: 760px) {
   .experience {

@@ -281,9 +281,13 @@ export class AtlasEngine {
     this.observer.observe(mount);
     this.resize();
     this.renderer.shadowMap.needsUpdate = true;
-    const visibility = () => { if (!document.hidden) this.invalidate(); };
+    const visibility = () => {
+      if (!document.hidden) this.invalidate();
+    };
     document.addEventListener("visibilitychange", visibility);
-    this.cleanup.push(() => document.removeEventListener("visibilitychange", visibility));
+    this.cleanup.push(() =>
+      document.removeEventListener("visibilitychange", visibility),
+    );
   }
 
   private mesh(
@@ -544,6 +548,7 @@ export class AtlasEngine {
     group.add(trees);
     this.resources.add(geometry);
     this.resources.add(material);
+    return trees;
   }
 
   private buildTransformation() {
@@ -557,19 +562,21 @@ export class AtlasEngine {
     this.resources.add(this.siteMaterial);
     this.parkMaterial.depthWrite = false;
     this.treeMaterial.depthWrite = false;
-    this.mesh(
+    const parkSurface = this.mesh(
       extrusion([futurePark], 2.0),
       this.parkMaterial,
       this.park,
       false,
-    ).position.y = 1;
+    );
+    parkSurface.position.y = 1;
+    parkSurface.renderOrder = 2;
     const rng = random(270);
     const trees: Point[] = [];
     for (let i = 0; i < 650; i++) {
       const point: Point = [230 + rng() * 200, -195 + rng() * 408];
       if (inside(point, futurePark)) trees.push(point);
     }
-    this.makeTrees(trees, this.treeMaterial, this.park, 4.4, 3);
+    this.makeTrees(trees, this.treeMaterial, this.park, 4.4, 3).renderOrder = 3;
     this.world.add(this.park);
     this.lifeMaterial.depthWrite = false;
     futureZones.forEach((zone, index) => {
@@ -737,7 +744,8 @@ export class AtlasEngine {
 
   private invalidate() {
     this.invalidated = true;
-    if (!this.frame && !this.disposed) this.frame = requestAnimationFrame(this.animate);
+    if (!this.frame && !this.disposed)
+      this.frame = requestAnimationFrame(this.animate);
   }
 
   private animate = (time: number) => {
