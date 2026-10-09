@@ -24,7 +24,12 @@ Checked 9 October 2026 in Chromium through the Codex browser. Visual inspection 
 
 ## Publication
 
-GitHub Pages verification is recorded after the deployment completes. The workflow runs the same tests and production build before publishing.
+- Repository created at [jlsp124/concord-landing-concept](https://github.com/jlsp124/concord-landing-concept), with complete source and meaningful Git history.
+- [Pages workflow](https://github.com/jlsp124/concord-landing-concept/actions/workflows/pages.yml) builds and deploys successfully using Node 24. Future pushes to `main` publish automatically.
+- Public URL verified: **https://jlsp124.github.io/concord-landing-concept/**. HTTPS is enforced; the page returns HTTP 200.
+- All 18 published files were fetched successfully, including JavaScript, CSS, fonts, favicon, licences, and sharing image. Project-base asset references are correct.
+- Live desktop and 390 × 844 phone views were inspected, including model interaction, source overlay, reset, and disclaimer. No serious console errors or warnings were captured.
+- Production HTML has the intended title, sharing metadata, and `noindex, nofollow`.
 
 ## Practical limits
 
