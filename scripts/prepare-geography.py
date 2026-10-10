@@ -7,6 +7,7 @@ No API keys required. Does not fetch imagery or personal information.
 
 import json
 import math
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -115,7 +116,7 @@ for r in records("parks-polygon-representation", FILTER):
         parks.append({"name": r["park_name"], "rings": rings(p)})
 
 data = {"attribution": "Contains information licensed under the Open Government Licence – Vancouver.",
-        "source": "City of Vancouver", "retrieved": "2026-10-10", "origin": ORIGIN,
+        "source": "City of Vancouver", "retrieved": datetime.now(timezone.utc).date().isoformat(), "origin": ORIGIN,
         "bounds": BOUNDS, "land": lands, "shoreline": shorelines,
         "buildings": buildings, "streets": streets, "parks": parks}
 target = ROOT / "public/data/geography.json"

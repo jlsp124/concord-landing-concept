@@ -13,3 +13,5 @@ source-assets/raw/
 generated/intermediate/
 temp/
 screenshots/
+__pycache__/
+*.pyc

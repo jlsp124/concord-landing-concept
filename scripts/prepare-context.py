@@ -4,6 +4,7 @@ Run with the project venv: python scripts/prepare-context.py
 Raw downloads stay in ignored source-assets/raw; no browser-time API requests.
 """
 from pathlib import Path
+from datetime import datetime, timezone
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 from concurrent.futures import ThreadPoolExecutor
@@ -172,7 +173,7 @@ def elevations():
                 continue
         parts.append(dict(id=building["id"], rings=building["rings"], h=round(height,1), g=round(ground,1)))
     manifest = dict(source="GeoBC LidarBC 2025 DSM/DEM + City of Vancouver 2015 footprints", year=2025,
-                    retrieved="2026-10-10", bounds=BBOX, raster_crs=raster_crs.to_string(), horizontal_crs=horizontal.to_string(), estimated=measured, fallback=len(heights)-measured,
+                    retrieved=datetime.now(timezone.utc).date().isoformat(), bounds=BBOX, raster_crs=raster_crs.to_string(), horizontal_crs=horizontal.to_string(), estimated=measured, fallback=len(heights)-measured,
                     method="DSM minus DEM; 80th percentile within footprint; large roofs split into 8m height bands on an 8m grid. Generalized, not survey geometry.",
                     tiles=[a for _, a in dem_files + dsm_files],
                     hashes={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p,_ in dem_files+dsm_files},
@@ -216,7 +217,7 @@ def orthophoto():
     mobile.thumbnail((1536, 1536), Image.Resampling.LANCZOS)
     mobile.save(output / "false-creek-2022-small.webp", quality=79, method=6)
     (output / "orthophoto.json").write_text(json.dumps(dict(source="City of Vancouver Orthophotos 2022", url=TILES,
-       bounds=BBOX, width=canvas.width, height=canvas.height, year=2022, retrieved="2026-10-10", zoom=zoom), indent=2))
+       bounds=BBOX, width=canvas.width, height=canvas.height, year=2022, retrieved=datetime.now(timezone.utc).date().isoformat(), zoom=zoom), indent=2))
     print(f"Orthophoto: {canvas.width}x{canvas.height}, {(output / 'false-creek-2022.webp').stat().st_size/1000:.0f} KB", flush=True)
 
 

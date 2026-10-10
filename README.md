@@ -33,6 +33,8 @@ npm run preview
 
 Production assets are local: no map-service requests, account, secrets, telemetry or backend. Node / Python tools and GIS intermediates remain project-local. Python is only needed to regenerate geography, not to build or view the committed scene.
 
+After building, `Start-Preview.cmd` offers a dependency-free static preview on loopback port 4174 using the installed Node runtime. Open the printed URL and keep its terminal open; Ctrl+C stops it. The same launcher and compiled assets are included in the portable delivery package.
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r scripts/requirements-gis.txt

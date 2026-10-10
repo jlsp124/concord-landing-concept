@@ -107,6 +107,7 @@ export const beats = [
 ] as const;
 
 export function beatAt(value: number) {
+  if (value >= beats[beats.length - 1].end) return beats.length - 1;
   return beats.findIndex((beat) => value >= beat.start && value < beat.end);
 }
 
