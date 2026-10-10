@@ -1,54 +1,49 @@
-# Sources, assets, and interpretation
+# Sources, assets and interpretation
 
-Research checked **9 October 2026**. This is an independent conceptual exploration, not an official Concord Pacific representation. Public planning material describes different points in a long-running process; it is not a guarantee of current approvals or future delivery.
+Checked **10 October 2026**. Independent conceptual exploration; not commissioned, approved or endorsed by Concord Pacific or the City of Vancouver. Policy, proposals, historical geography and original interpretation are separate evidence classes. No delivery date is asserted.
 
-## Factual and planning sources
+## Planning and project sources
 
-| Source | Used for | Status / treatment |
-| --- | --- | --- |
-| [Concord Pacific Place](https://www.concordpacificplace.com/) | Concord Landing as the remaining / culminating chapter; present events and interim use; broader False Creek story | Official developer storytelling. Paraphrased selectively; no photos, logos, financial claims, or assertions about viaduct safety redistributed. |
-| [City: Northeast False Creek](https://vancouver.ca/home-property-development/northeast-false-creek.aspx) | Area-plan intent, parks, public realm, mixed community, viaduct replacement | Long-term policy vision. No timetable or numerical delivery promises used. |
-| [City: rezoning and development](https://vancouver.ca/home-property-development/rezoning-and-development.aspx) | Distinguishing an area plan from site-specific rezoning | Linked as background. |
-| [City / Shape Your City: 811 Carrall St / Sub-area 6C](https://www.shapeyourcity.ca/811-carrall-st) | Current publicly stated application status; mixed-use proposal; public plaza and park extension | Page says **application on hold**, last updated 11 March 2026. Historic proposal heights and quantities are not reproduced. |
-| [City: urban design](https://vancouver.ca/home-property-development/urban-design.aspx) | Georgia Landing, active lanes, park frontage, Carrall Greenway, Dunsmuir Connection, and city / water relationships | Historic policy highlights, not an approved current architectural design. |
-| [City: streets and connectivity](https://vancouver.ca/home-property-development/streetscape-design.aspx) | Existing raised viaducts versus planned ground-level streets; walking and cycling connections | This page includes outdated milestone dates. Only spatial policy intent is used, with no schedule. |
-| [City: parks](https://vancouver.ca/home-property-development/northeast-false-creek-parks.aspx) | Park extension, waterfront access, habitat, public gathering, continuous seawall intent | Policy intent; original abstract landscape illustration. |
-| [City: park design](https://vancouver.ca/home-property-development/park-design.aspx) | Belonging, local Nations, cultural connections, flexible spaces, living shoreline | Contains historic process information. Not treated as a current construction update or final park layout. |
-| [Northeast False Creek Plan (2018)](https://guidelines.vancouver.ca/policy-plan-northeast-false-creek.pdf) | Public area-plan reference, accessible from the sources panel | Referenced, not redistributed. Exact planning diagrams and renderings are not embedded. |
-| [Concord commercial: Northeast False Creek](https://commercial.concordpacific.com/building/northeast-false-creek) | Residential / office / retail mix in the neighbourhood concept | Official developer description. No inventory or availability claims used. |
+| Primary source                                                                                                    | Use and treatment                                                                                                                                                                                      |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [Concord Pacific Place](https://www.concordpacificplace.com/)                                                     | Eight of nine neighbourhoods built; Concord Landing as the final neighbourhood of the former Expo lands. Selectively paraphrased. No official logo, marketing photography or renderings redistributed. |
+| [City: Northeast False Creek](https://vancouver.ca/home-property-development/northeast-false-creek.aspx)          | Area-plan intent: community, public realm, parks and viaduct replacement. Policy does not establish a construction programme.                                                                          |
+| [City / Shape Your City: 811 Carrall / Sub-area 6C](https://www.shapeyourcity.ca/811-carrall-st)                  | Application **on hold** when checked. Mixed-use proposal, public plaza and park extension are context, not approved architecture. Historic height / quantity proposals are not reproduced.             |
+| [City: urban design](https://vancouver.ca/home-property-development/urban-design.aspx)                            | Georgia Landing, active lanes, park frontage and Dunsmuir Connection. Original schematic spatial interpretations.                                                                                      |
+| [City: streets and connectivity](https://vancouver.ca/home-property-development/streetscape-design.aspx)          | Existing raised infrastructure versus proposed connections and ground-level streets. Historic dates on the page are not used as future milestones.                                                     |
+| [City: park design](https://vancouver.ca/home-property-development/park-design.aspx)                              | Park extension, waterfront, ecological and cultural relationships. The displayed park polygon and vegetation are an original concept, not a final landscape plan.                                      |
+| [Northeast False Creek Plan, 2018](https://guidelines.vancouver.ca/policy-plan-northeast-false-creek.pdf)         | Public area-plan background. Linked; planning diagrams are not embedded or republished.                                                                                                                |
+| [Concord commercial: Northeast False Creek](https://commercial.concordpacific.com/building/northeast-false-creek) | Neighbourhood mix. No retail inventory, availability or leasing claims.                                                                                                                                |
 
-## Visual reference inventory
+## Geographic data and licences
 
-| Asset / reference | Purpose | Redistribution |
-| --- | --- | --- |
-| [City sub-area map](https://vancouver.ca/images/cov/feature/nefc-sub-area-map-landing.jpg) | Geographic relationship of 6B, 6C, 6D, and 10C | Reference only. |
-| [City preliminary 6C sketch](https://vancouver.ca/images/cov/content/nefc-sub-area-6c-sketch.jpg) | Relationship of Georgia Landing, public lanes, and park edge | Reference only; not copied as a future skyline. |
-| [City proposed street diagram](https://vancouver.ca/images/cov/content/nefc-after-map.jpg) | Approximate alignment and role of new connections | Reference only. Overlays are original schematic illustrations. |
-| [City existing street diagram](https://vancouver.ca/images/cov/content/nefc-before-map.jpg) | Existing viaduct context | Reference only. |
-| [City orthophoto imagery 2022](https://opendata.vancouver.ca/explore/dataset/orthophoto-imagery-2022/) | Assessed as geographic / aerial source | Not needed in the final composition; not redistributed. |
-| [Alche Studio](https://alche.studio/) | Interaction principle: the site embodies its subject through spatial manipulation | Studied in a browser. No code, imagery, or visual identity copied. |
-| [RECPLACE](https://recplace.ca/) | Existing project experience context supplied by the author | Studied as background. No assets reused. |
+Contains information licensed under the **Open Government Licence – Vancouver**. Source: **City of Vancouver**. [Vancouver licence](https://opendata.vancouver.ca/pages/licence/).
 
-## Open geographic data
+Contains information licensed under the **Open Government Licence – British Columbia**. Source: **Province of British Columbia / GeoBC, LidarBC**. [LidarBC data release](https://www2.gov.bc.ca/gov/content/data/geographic-data-services/topographic-data/lidarbc), [British Columbia licence](https://www2.gov.bc.ca/gov/content/data/open-data/open-government-licence-bc).
 
-The localized map extract contains information licensed under the **Open Government Licence – Vancouver**. Source: **City of Vancouver**. [Licence](https://opendata.vancouver.ca/pages/licence/).
+| Dataset                                                                                                                                                                                                            | Processing and limits                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [City shoreline 2002](https://opendata.vancouver.ca/explore/dataset/shoreline-2002/)                                                                                                                               | Cropped and simplified real land / water outline. Historical shoreline; not an exact contemporary seawall or survey boundary.                                                                                                                             |
+| [City building footprints 2015](https://opendata.vancouver.ca/explore/dataset/building-footprints-2015/)                                                                                                           | Cropped outlines and urban grain. Features under 45m² omitted. 4,681 footprints retained; this is not a complete 2026 building inventory.                                                                                                                 |
+| [City public streets](https://opendata.vancouver.ca/explore/dataset/public-streets/)                                                                                                                               | Cropped street centre lines, including viaduct alignments. Road widths, deck heights and supports are illustrative. No navigation or traffic service.                                                                                                     |
+| [City park polygons](https://opendata.vancouver.ca/explore/dataset/parks-polygon-representation/)                                                                                                                  | Existing park context. Future park overlay is a separate original illustration.                                                                                                                                                                           |
+| [City orthophotography 2022](https://opendata.vancouver.ca/explore/dataset/orthophoto-imagery-2022/)                                                                                                               | City imagery captured June–July 2022, fetched from its official ArcGIS tile service at zoom 16 and cropped to the context extent. Exported as local desktop and phone WebP textures. Ground detail remains historical.                                    |
+| [GeoBC LidarBC](https://www2.gov.bc.ca/gov/content/data/geographic-data-services/topographic-data/lidarbc), [official dataset record](https://open.canada.ca/data/en/dataset/d08b2795-d192-4377-8056-eccef50296e6) | Twenty 2025 one-metre DSM / DEM rasters. Generalized roof estimates from DSM minus DEM; source CRS EPSG:6653, horizontal EPSG:3157. Ground heights retained in metadata; display base flattened. Relative heights use a consistent source vertical datum. |
 
-| Dataset | Purpose | Limitations / processing |
-| --- | --- | --- |
-| [Shoreline 2002](https://opendata.vancouver.ca/explore/dataset/shoreline-2002/) | Recognizable False Creek water / land relationship | Approximate 2002 shoreline, not updated by the publisher. Cropped, simplified, and projected into a local scene. Not a survey or an exact present-day seawall. |
-| [Building footprints 2015](https://opendata.vancouver.ca/explore/dataset/building-footprints-2015/) | Existing urban grain and landmark context | 2015 outline snapshot. Simplified footprints; elevations are symbolic and do not represent measured building heights. Not a complete 2026 building inventory. |
-| [Public streets](https://opendata.vancouver.ca/explore/dataset/public-streets/) | Context street network | Cropped and simplified. No navigation or traffic information. |
-| [Parks — polygon representation](https://opendata.vancouver.ca/explore/dataset/parks-polygon-representation/) | Existing parks in context | Cropped and simplified. Future park illustration is an original conceptual overlay, not this dataset. |
+Extent: `[-123.144, 49.264, -123.088, 49.297]`, approximately 4.1 × 3.7 km. Scene origin: `[-123.109, 49.275]`. Local east is +X; north is −Z. The source layers have different dates and may omit or misrepresent later construction.
 
-The source-data preparation script and final extract are included for reproducibility. Only the necessary geographic features are included; no personal information is collected or published.
+Height coverage: **4,624 / 4,681 footprints sampled; 57 explicit 9m fallbacks**. Roof height is the 80th percentile of valid relative-height samples inside a footprint, bounded to 2–240m. Large buildings use clipped eight-metre grid / height bands and an eight-metre base, yielding 7,589 display parts. This coarse process may include vegetation or miss fine roofs and setbacks. It is not survey geometry or an architectural replica.
 
-## Original assets and fonts
+`scripts/prepare-geography.py` and `scripts/prepare-context.py` reproduce the crop and derivatives. `public/data/context.json` records tile URLs / metadata, SHA-256 hashes, bounds, source CRS, estimated heights and fallback flags. `public/data/orthophoto.json` records aerial source and crop metadata. Raw rasters and intermediates are project-local and ignored; the build requires only committed derivatives.
 
-- Model styling, interface mark, landscape treatment, future zones, narrative routes, icons, fallback map, and sharing image are original work for this concept.
-- Future development is represented as **abstract areas and symbolic forms**. These are not approved footprints, architecture, building heights, dimensions, parcel boundaries, or inventory.
-- [Instrument Serif](https://github.com/google/fonts/tree/main/ofl/instrumentserif) and [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans) are bundled through Fontsource under the SIL Open Font License. Licence copies are included in `public/licenses/`.
+The City 2022 LAS source was also investigated. Selected tile requests returned HTTP 403; no City LAS geometry is claimed or included. GeoBC's raster alternative avoids a large citywide point-cloud download.
 
-## Implementation references
+## Original work and other assets
 
-- [Three.js documentation](https://threejs.org/docs/) — orthographic camera, geometry, materials, and resource disposal.
-- [Vite GitHub Pages deployment guide](https://vite.dev/guide/static-deploy#github-pages) — base path and Actions deployment.
+- Camera score, narrative, shoreline mark, interface, facade / water shaders, trees, fallback composition and sharing screenshot are original work for this concept.
+- BC Place and Science World are simplified original landmark geometry. Their recognizability is prioritized; neither model is an exact reconstruction.
+- Future zones, routes and park are schematic interpretations of relationships. They are **not** approved architecture, parcel boundaries, building footprints, tower heights, sales inventory, floorplans or construction phases. Translucent material, visible source language and the on-hold note express this uncertainty.
+- [Instrument Serif](https://github.com/google/fonts/tree/main/ofl/instrumentserif) and [DM Sans](https://github.com/google/fonts/tree/main/ofl/dmsans) are bundled through Fontsource under the SIL Open Font License. Copies are in `public/licenses/`.
+- No reference-site models, source code, photos, music or design assets are redistributed. No sound, analytics, runtime map API, accounts, API keys or backend are included.
+
+Experience references and current engineering documentation are recorded in [research/RESEARCH.md](research/RESEARCH.md). Code is MIT licensed; geographic data and fonts retain their licences. These licences confer no rights to Concord Pacific's identity or imply endorsement.

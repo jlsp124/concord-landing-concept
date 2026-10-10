@@ -1,13 +1,54 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { chapter, chapters, clamp, lenses } from "./narrative";
-import type { Lens, ViewMode } from "./narrative";
+import { useEffect, useRef, useState } from "react";
 import { SpatialScene } from "./SpatialScene";
+import { beatAt, beatOpacity, beats, storyChange } from "./scene-score";
+import { clamp, lenses } from "./narrative";
+import type { Lens } from "./narrative";
+import contextSummary from "./data/context-summary.json";
 
-function Arrow({ diagonal = false }: { diagonal?: boolean }) {
+const sources = [
+  {
+    title: "Concord Pacific Place",
+    detail:
+      "The developer's account of the Expo lands, eight completed neighbourhoods and Concord Landing as the final chapter.",
+    url: "https://www.concordpacificplace.com/",
+  },
+  {
+    title: "Northeast False Creek Area Plan",
+    detail:
+      "City policy for reconnection, streets, waterfront and public realm. Policy intent is distinct from a current approved development design.",
+    url: "https://vancouver.ca/home-property-development/northeast-false-creek.aspx",
+  },
+  {
+    title: "811 Carrall / Sub-area 6C",
+    detail:
+      "The City rezoning page states that the application is on hold. Checked 10 October 2026. No completion date is represented here.",
+    url: "https://www.shapeyourcity.ca/811-carrall-st",
+  },
+  {
+    title: "City of Vancouver Open Data",
+    detail:
+      "Shoreline 2002, footprints 2015, parks, streets and cropped 2022 orthophotography. Historical snapshots, not a complete present-day survey. Open Government Licence — Vancouver.",
+    url: "https://opendata.vancouver.ca/",
+  },
+  {
+    title: "GeoBC / LidarBC",
+    detail: `2025 one-metre surface and ground rasters provide generalized roof-height estimates. ${contextSummary.estimated.toLocaleString("en-CA")} of ${contextSummary.total.toLocaleString("en-CA")} mapped footprints sampled; ${contextSummary.fallback} use a 9m fallback. Large roofs use simplified height bands. Open Government Licence — British Columbia.`,
+    url: "https://www2.gov.bc.ca/gov/content/data/geographic-data-services/topographic-data/lidarbc",
+  },
+];
+
+function Arrow({ down = false }: { down?: boolean }) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden="true"
+      className={down ? "arrow-down" : ""}
+    >
       <path
-        d={diagonal ? "M6 18 18 6M6 6h12v12" : "M4 12h15M13 6l6 6-6 6"}
+        d="M5 12h14M13 6l6 6-6 6"
+        fill="none"
         stroke="currentColor"
         strokeWidth="1.3"
       />
@@ -17,723 +58,524 @@ function Arrow({ diagonal = false }: { diagonal?: boolean }) {
 
 function Mark() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 48 48" fill="none">
+    <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
       <path
-        d="M5 34 21 18h22M5 25 18 12h25M5 43l21-21h17"
+        d="M4 22c4 0 5-13 11-13h11M4 27c8 0 9-13 16-13h6"
+        fill="none"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.2"
       />
     </svg>
   );
 }
 
-function Play({ playing }: { playing: boolean }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      {playing ? (
-        <path d="M9 6v12M15 6v12" stroke="currentColor" strokeWidth="1.7" />
-      ) : (
-        <path d="m9 6 9 6-9 6V6Z" stroke="currentColor" strokeWidth="1.3" />
-      )}
-    </svg>
-  );
-}
-
-const sourceLinks = [
-  [
-    "Concord Pacific Place",
-    "The final chapter narrative",
-    "https://www.concordpacificplace.com/",
-  ],
-  [
-    "Northeast False Creek Plan",
-    "City of Vancouver · long-term area vision",
-    "https://vancouver.ca/home-property-development/northeast-false-creek.aspx",
-  ],
-  [
-    "Sub-area 6C / 811 Carrall Street",
-    "City proposal · application on hold",
-    "https://www.shapeyourcity.ca/811-carrall-st",
-  ],
-  [
-    "Urban design & connectivity",
-    "Georgia Landing, Dunsmuir & Carrall",
-    "https://vancouver.ca/home-property-development/urban-design.aspx",
-  ],
-  [
-    "Park design principles",
-    "Creekside Park extension & public realm",
-    "https://vancouver.ca/home-property-development/park-design.aspx",
-  ],
-  [
-    "City open geographic data",
-    "Shoreline, footprints, streets & parks",
-    "https://opendata.vancouver.ca/pages/home/",
-  ],
-];
-
 export default function App() {
+  const scroller = useRef<HTMLElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const autoplay = useRef(0);
+  const exploreFocus = useRef(false);
+  const exploration = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
-  const [lens, setLens] = useState<Lens>("all");
-  const [mode, setMode] = useState<ViewMode>("perspective");
-  const [zoom, setZoom] = useState(1);
-  const [reset, setReset] = useState(0);
   const [ready, setReady] = useState(false);
-  const [simpleMap, setSimpleMap] = useState(false);
+  const [fallback, setFallback] = useState(false);
+  const [lens, setLens] = useState<Lens>("all");
+  const [existing, setExisting] = useState(false);
+  const [reset, setReset] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [interacted, setInteracted] = useState(false);
-  const [reduced, setReduced] = useState(
+  const [about, setAbout] = useState(false);
+  const [flat, setFlat] = useState(false);
+  const [systemReduced, setSystemReduced] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
-  const [dialogTab, setDialogTab] = useState<
-    "concept" | "sources" | "controls"
-  >("concept");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const progressRef = useRef(progress);
-  progressRef.current = progress;
-
-  const currentChapter = chapter(progress);
-  const content = chapters[currentChapter];
-  const activeLens = lenses.find((item) => item.id === lens);
-
+  const [motionOverride, setMotionOverride] = useState<boolean | null>(null);
+  const reduced = motionOverride ?? systemReduced;
+  const exploring = progress >= 0.945;
+  const activeBeat = beatAt(progress);
+  const selected = lenses.find((item) => item.id === lens);
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const change = () => setReduced(media.matches);
-    media.addEventListener("change", change);
-    return () => media.removeEventListener("change", change);
-  }, []);
-
-  useEffect(() => {
-    if (!playing || reduced || !ready) return;
-    let frame = 0;
-    let previous = 0;
-    const animate = (time: number) => {
-      if (!previous) previous = time;
-      // Clamp long frames so a backgrounded tab never skips the story.
-      const step = Math.min(time - previous, 60) / 26000;
-      previous = time;
-      const next = clamp(progressRef.current + step);
-      progressRef.current = next;
-      setProgress(next);
-      if (next >= 1) setPlaying(false);
-      else frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [playing, reduced, ready]);
-
+    if (exploring && exploreFocus.current) {
+      exploreFocus.current = false;
+      exploration.current?.focus({ preventScroll: true });
+    }
+  }, [exploring]);
   useEffect(() => {
     if (reduced) setPlaying(false);
   }, [reduced]);
 
   useEffect(() => {
-    const modal = dialogRef.current;
-    if (!modal) return;
-    if (dialogOpen && !modal.open) modal.showModal();
-    if (!dialogOpen && modal.open) modal.close();
-  }, [dialogOpen]);
-
-  const stop = useCallback(() => {
-    setPlaying(false);
-    setInteracted(true);
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setSystemReduced(query.matches);
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
   }, []);
 
-  const scrub = useCallback(
-    (value: number) => {
-      setProgress(clamp(value));
-      setLens("all");
-      stop();
-    },
-    [stop],
-  );
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const distance = Math.max(
+        1,
+        (scroller.current?.offsetHeight ?? 1) - window.innerHeight,
+      );
+      setProgress(clamp(window.scrollY / distance));
+    };
+    const request = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    window.addEventListener("scroll", request, { passive: true });
+    window.addEventListener("resize", request);
+    update();
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", request);
+      window.removeEventListener("resize", request);
+    };
+  }, []);
 
-  const selectLens = useCallback(
-    (value: Lens) => {
-      stop();
-      setLens((previous) => (previous === value ? "all" : value));
-      if (value !== "all") setProgress(1);
-    },
-    [stop],
-  );
-
-  const journey = () => {
-    setInteracted(true);
-    setLens("all");
-    if (reduced) {
-      setProgress(currentChapter === 0 ? 0.5 : currentChapter === 1 ? 1 : 0);
-    } else {
-      if (playing) setPlaying(false);
-      else {
-        setProgress(0);
-        setMode(simpleMap ? "plan" : "perspective");
-        setZoom(1);
-        setReset((v) => v + 1);
-        setPlaying(true);
-      }
-    }
-  };
-
-  const resetExperience = () => {
-    stop();
-    setProgress(0);
-    setLens("all");
-    setMode(simpleMap ? "plan" : "perspective");
-    setZoom(1);
-    setReset((v) => v + 1);
-  };
-
-  const openDialog = (section: typeof dialogTab) => {
-    setDialogTab(section);
-    setDialogOpen(true);
+  const goTo = (value: number) => {
     setPlaying(false);
+    const distance = Math.max(
+      1,
+      (scroller.current?.offsetHeight ?? 1) - window.innerHeight,
+    );
+    window.scrollTo({
+      top: distance * value,
+      behavior: reduced ? "instant" : "smooth",
+    });
+  };
+
+  useEffect(() => {
+    if (!playing || reduced || about) return;
+    const distance = Math.max(
+      1,
+      (scroller.current?.offsetHeight ?? 1) - window.innerHeight,
+    );
+    const startY = window.scrollY;
+    const remaining = Math.max(0, distance - startY);
+    const duration = (remaining / distance) * 68000;
+    let start = 0;
+    const tick = (time: number) => {
+      if (!start) start = time;
+      const t = clamp((time - start) / Math.max(1, duration));
+      window.scrollTo({ top: startY + remaining * t, behavior: "instant" });
+      if (t < 1) autoplay.current = requestAnimationFrame(tick);
+      else setPlaying(false);
+    };
+    const stop = () => setPlaying(false);
+    const hidden = () => {
+      if (document.hidden) stop();
+    };
+    const key = (event: KeyboardEvent) => {
+      if (
+        [
+          "Escape",
+          "ArrowDown",
+          "ArrowUp",
+          "PageDown",
+          "PageUp",
+          "Home",
+          "End",
+          " ",
+        ].includes(event.key)
+      )
+        stop();
+    };
+    autoplay.current = requestAnimationFrame(tick);
+    window.addEventListener("wheel", stop, { passive: true });
+    window.addEventListener("touchstart", stop, { passive: true });
+    window.addEventListener("keydown", key);
+    document.addEventListener("visibilitychange", hidden);
+    return () => {
+      cancelAnimationFrame(autoplay.current);
+      window.removeEventListener("wheel", stop);
+      window.removeEventListener("touchstart", stop);
+      window.removeEventListener("keydown", key);
+      document.removeEventListener("visibilitychange", hidden);
+    };
+  }, [playing, reduced, about]);
+
+  useEffect(() => {
+    if (about) {
+      setPlaying(false);
+      dialog.current?.showModal();
+      const previous = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.documentElement.style.overflow = previous;
+        dialog.current?.close();
+      };
+    }
+  }, [about]);
+
+  const select = (value: Lens) => {
+    setLens(value);
+    setReset((n) => n + 1);
   };
 
   return (
-    <div
-      className={`experience ${ready ? "is-ready" : ""} ${interacted ? "is-exploring" : ""} ${reduced ? "reduce-motion" : ""} ${activeLens ? "has-lens" : ""}`}
-      data-chapter={currentChapter}
-    >
-      <a className="skip-link" href="#timeline">
-        Skip to transformation controls
-      </a>
-      <header className="masthead">
-        <button
-          className="wordmark"
-          onClick={resetExperience}
-          aria-label="Concord Landing — return to beginning"
-        >
-          <Mark />
-          <span>
-            CONCORD
-            <br />
-            LANDING
-          </span>
-        </button>
-        <div className="location">
-          <span className="location-dot" />
-          NORTHEAST FALSE CREEK
-          <span className="location-city">VANCOUVER, BC</span>
-        </div>
-        <nav aria-label="Experience information" className="header-nav">
-          <button onClick={() => openDialog("concept")}>
-            About the concept <span className="small-plus">+</span>
-          </button>
-        </nav>
-      </header>
-
-      <main id="main" className="main-stage">
-        <SpatialScene
-          progress={progress}
-          lens={lens}
-          mode={mode}
-          zoom={zoom}
-          reset={reset}
-          reduced={reduced}
-          onReady={(fallback = false) => {
-            setReady(true);
-            if (fallback) {
-              setSimpleMap(true);
-              setMode("plan");
-            }
-          }}
-          onSelect={selectLens}
-          onScrub={scrub}
-          onInteract={stop}
-        />
-
-        <div className="editorial">
-          {activeLens ? (
-            <section
-              className="lens-story"
-              key={activeLens.id}
-              aria-labelledby="lens-title"
-            >
-              <button className="back-to-whole" onClick={() => setLens("all")}>
-                <span>←</span> The whole neighbourhood
-              </button>
-              <div className="eyebrow">
-                <span className={`lens-swatch ${activeLens.id}`} />
-                {activeLens.eyebrow}
-              </div>
-              <h1 id="lens-title">{activeLens.title}</h1>
-              <p>{activeLens.description}</p>
-              <a
-                className="source-reference"
-                href={activeLens.source}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {activeLens.sourceLabel}
-                <Arrow diagonal />
-              </a>
-              <span className="story-note">{activeLens.note}</span>
-            </section>
-          ) : (
-            <section
-              className="chapter-story"
-              key={currentChapter}
-              aria-labelledby="chapter-title"
-            >
-              <div className="eyebrow">{content.kicker}</div>
-              <h1 id="chapter-title">
-                {content.title.map((line, i) => (
-                  <span
-                    key={line}
-                    className={i === content.italic ? "serif-italic" : ""}
-                  >
-                    {line}
-                  </span>
-                ))}
-              </h1>
-              <p>{content.description}</p>
-              <button
-                className="journey-link"
-                onClick={journey}
-                disabled={!ready}
-              >
-                <span className="journey-icon">
-                  <Play playing={playing} />
-                </span>
-                <span>
-                  {reduced
-                    ? "Explore the next chapter"
-                    : playing
-                      ? "Pause the journey"
-                      : currentChapter === 2
-                        ? "Replay the journey"
-                        : "Take the 30-second journey"}
-                </span>
-                <Arrow />
-              </button>
-              {!interacted && (
-                <div className="intro-hint">
-                  Or move the timeline. The place is yours to explore.
-                </div>
-              )}
-            </section>
-          )}
-        </div>
-
-        <div className="view-controls" aria-label="Map view">
-          <div className="view-toggle">
-            <button
-              aria-pressed={mode === "perspective"}
-              disabled={simpleMap}
-              onClick={() => {
-                setMode("perspective");
-                stop();
-              }}
-            >
-              Perspective
-            </button>
-            <button
-              aria-pressed={mode === "plan"}
-              onClick={() => {
-                setMode("plan");
-                stop();
-              }}
-            >
-              Plan
-            </button>
-          </div>
-          <button
-            className="icon-button help-button"
-            aria-label="How to explore"
-            onClick={() => openDialog("controls")}
-          >
-            ?
-          </button>
-        </div>
-
-        <aside className="lens-navigation" aria-label="Explore a spatial layer">
-          <div className="eyebrow lens-heading">EXPLORE A LAYER</div>
-          {lenses.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => selectLens(item.id)}
-              aria-pressed={lens === item.id}
-              className={`lens-option ${item.id}`}
-            >
-              <span className="lens-number">{item.number}</span>
-              <span className="lens-label desktop-label">{item.label}</span>
-              <span className="lens-label mobile-label">{item.short}</span>
-              <span className="lens-line" />
-            </button>
-          ))}
-          {lens !== "all" && (
-            <button className="all-layers" onClick={() => setLens("all")}>
-              Show the whole <span>↗</span>
-            </button>
-          )}
-        </aside>
-
-        <div className="map-bottom">
-          <div className="map-annotation">
-            <span className="north-arrow" aria-hidden="true">
-              ↑
-            </span>
-            <span>N</span>
-            <span className="model-description">
-              A SPATIAL STUDY
-              <br />
-              {content.caption}
-            </span>
-          </div>
-          <div className="camera-controls">
-            <span className="drag-hint">
-              {simpleMap
-                ? "Simple plan view"
-                : mode === "plan"
-                  ? "Drag to move the plan"
-                  : "Drag to look around"}
-            </span>
-            <button
-              className="icon-button"
-              aria-label="Zoom out"
-              disabled={zoom <= 0.8}
-              onClick={() => {
-                setZoom((z) => clamp(z - 0.15, 0.8, 1.7));
-                stop();
-              }}
-            >
-              −
-            </button>
-            <button
-              className="icon-button"
-              aria-label="Zoom in"
-              disabled={zoom >= 1.7}
-              onClick={() => {
-                setZoom((z) => clamp(z + 0.15, 0.8, 1.7));
-                stop();
-              }}
-            >
-              +
-            </button>
-            <button
-              className="icon-button reset-camera"
-              aria-label="Reset map view"
-              onClick={() => {
-                setZoom(1);
-                setReset((v) => v + 1);
-                stop();
-              }}
-            >
-              ↺
-            </button>
-          </div>
-        </div>
-
-        {!ready && (
-          <div className="loading-state" role="status">
-            <Mark />
-            <span>
-              Finding our place
-              <br />
-              <small>Preparing the spatial study</small>
-            </span>
-          </div>
-        )}
-      </main>
-
-      <section
-        id="timeline"
-        className="timeline"
-        aria-label="Explore the transformation"
-      >
-        <div className="timeline-intro">
-          <span className="chapter-index">
-            {content.number}
-            <span>/ 03</span>
-          </span>
-          <span className="timeline-title">{content.label}</span>
-        </div>
-        <div className="timeline-control">
-          <div className="timeline-labels">
-            <button
-              className={currentChapter === 0 ? "current" : ""}
-              onClick={() => scrub(0)}
-            >
-              Today
-            </button>
-            <button
-              className={currentChapter === 1 ? "current" : ""}
-              onClick={() => scrub(0.5)}
-            >
-              Reconnection
-            </button>
-            <button
-              className={currentChapter === 2 ? "current" : ""}
-              onClick={() => scrub(1)}
-            >
-              A possible future
-            </button>
-          </div>
-          <div
-            className="timeline-track"
-            style={
-              { "--progress": `${progress * 100}%` } as React.CSSProperties
-            }
-          >
-            <div className="timeline-rule" />
-            <div className="timeline-fill" />
-            <span className="timeline-midpoint" />
-            <input
-              id="transformation"
-              type="range"
-              min="0"
-              max="1000"
-              step="1"
-              value={Math.round(progress * 1000)}
-              aria-label="Transformation from today to a possible future"
-              aria-valuetext={`${content.label}, ${Math.round(progress * 100)} percent through the conceptual story`}
-              onChange={(e) => scrub(Number(e.target.value) / 1000)}
-            />
-            <span className="timeline-handle" aria-hidden="true">
-              <span>‹</span>
-              <span>›</span>
-            </span>
-          </div>
-          <div className="timeline-caption">
-            <span>DRAG TO EXPLORE THE CHANGE</span>
-            <span>Conceptual sequence, not a delivery timeline</span>
-          </div>
-        </div>
-        <button
-          className={`tour-button ${playing ? "is-playing" : ""}`}
-          onClick={journey}
-          disabled={!ready}
-          aria-label={
-            reduced
-              ? "Explore next chapter"
-              : playing
-                ? "Pause guided journey"
-                : "Play guided journey"
-          }
-        >
-          <Play playing={playing} />
-        </button>
-      </section>
-
-      <footer className="footer">
-        <button onClick={() => openDialog("concept")} className="independent">
-          Independent concept{" "}
-          <span>· Not an official Concord Pacific representation</span>
-        </button>
-        <div className="footer-right">
-          <button
-            className="motion-control"
-            onClick={() => setReduced((v) => !v)}
-            aria-pressed={!reduced}
-            aria-label={reduced ? "Enable motion" : "Reduce motion"}
-          >
-            <span className={`motion-dot ${reduced ? "paused" : ""}`} />
-            MOTION {reduced ? "OFF" : "ON"}
-          </button>
-          <button onClick={() => openDialog("sources")}>
-            Sources <Arrow diagonal />
-          </button>
-        </div>
-      </footer>
-
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        {content.label}
-        {activeLens ? `: ${activeLens.title}` : ""}
-      </div>
-
-      <dialog
-        ref={dialogRef}
-        className="concept-dialog"
-        onCancel={() => setDialogOpen(false)}
-        onClose={() => setDialogOpen(false)}
-        aria-labelledby="dialog-title"
-        onClick={(e) => {
-          if (e.target === e.currentTarget) setDialogOpen(false);
+    <>
+      <a
+        className="skip-link"
+        href="#exploration"
+        onClick={(event) => {
+          event.preventDefault();
+          exploreFocus.current = true;
+          goTo(1);
         }}
       >
-        <div className="dialog-inner">
-          <div className="dialog-header">
-            <Mark />
-            <span>AN OPEN CHAPTER</span>
+        Skip to exploration
+      </a>
+      <main
+        ref={scroller}
+        className={`story-scroll ${reduced ? "reduced" : ""}`}
+        aria-label="The story of Concord Landing"
+      >
+        <div
+          className={`experience ${ready ? "is-ready" : ""} ${exploring ? "is-exploring" : ""}`}
+          data-progress={progress.toFixed(3)}
+        >
+          <SpatialScene
+            story={progress}
+            progress={exploring ? (existing ? 0 : 1) : storyChange(progress)}
+            lens={exploring ? lens : "all"}
+            explore={exploring}
+            reset={reset}
+            reduced={reduced}
+            flat={flat}
+            onReady={(isFallback) => {
+              setReady(true);
+              setFallback(Boolean(isFallback));
+            }}
+          />
+          <div className="film-shade" aria-hidden="true" />
+          <header className="masthead">
             <button
-              className="close-dialog icon-button"
-              onClick={() => setDialogOpen(false)}
-              aria-label="Close information"
+              className="identity"
+              onClick={() => {
+                select("all");
+                setExisting(false);
+                goTo(0);
+              }}
+              aria-label="Concord Landing, return to opening"
             >
-              ×
+              <Mark />
+              <span>
+                CONCORD
+                <br />
+                LANDING
+              </span>
             </button>
-          </div>
-          <nav className="dialog-tabs" aria-label="Concept information">
-            <button
-              aria-current={dialogTab === "concept" ? "page" : undefined}
-              onClick={() => setDialogTab("concept")}
-            >
-              The concept
-            </button>
-            <button
-              aria-current={dialogTab === "sources" ? "page" : undefined}
-              onClick={() => setDialogTab("sources")}
-            >
-              Public sources
-            </button>
-            <button
-              aria-current={dialogTab === "controls" ? "page" : undefined}
-              onClick={() => setDialogTab("controls")}
-            >
-              How to explore
-            </button>
-          </nav>
-          {dialogTab === "concept" && (
-            <section className="dialog-content">
-              <div className="eyebrow">
-                A digital experience that can grow with a place
-              </div>
-              <h2 id="dialog-title">
-                The final chapter should be something you can <em>explore.</em>
-              </h2>
-              <p>
-                Concord Pacific Place describes Concord Landing as its
-                culminating neighbourhood. This study imagines how that story
-                could become a spatial experience: a place to understand
-                connections, public life, and change before individual buildings
-                are defined.
-              </p>
-              <div className="evolution">
-                <span className="eyebrow">ONE PLACE. DEEPER OVER TIME.</span>
-                <div>
-                  <span className="active">Masterplan</span>
-                  <i>→</i>
-                  <span className="active">Neighbourhood</span>
-                  <i>→</i>
-                  <span>Buildings</span>
-                  <i>→</i>
-                  <span>Spaces & plans</span>
-                </div>
-                <p>
-                  As the project becomes more defined, the same interface could
-                  reveal buildings, floors, residences, commercial spaces,
-                  plans, and eventually availability.
-                </p>
-              </div>
-              <div className="status-note">
-                <span className="status-dot" />
-                <p>
-                  <strong>A vision, still evolving.</strong> The City’s public
-                  811 Carrall / Sub-area 6C page marks the rezoning application
-                  as on hold. The sequence here illustrates planning
-                  relationships, not construction phases or a delivery date.
-                </p>
-              </div>
-              <p className="full-disclaimer">
-                Independent conceptual exploration based on publicly available
-                information. Not an official Concord Pacific representation. Not
-                commissioned, approved, or endorsed by Concord Pacific or the
-                City of Vancouver.
-              </p>
-            </section>
-          )}
-          {dialogTab === "sources" && (
-            <section className="dialog-content sources-content">
-              <div className="eyebrow">Grounded in public information</div>
-              <h2 id="dialog-title">
-                A clear point of <em>reference.</em>
-              </h2>
-              <div className="source-list">
-                {sourceLinks.map(([name, description, url]) => (
-                  <a
-                    key={name}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <div>
-                      <strong>{name}</strong>
-                      <span>{description}</span>
-                    </div>
-                    <Arrow diagonal />
-                  </a>
-                ))}
-              </div>
-              <p className="source-footnote">
-                Research checked 9 October 2026. Historical policy and
-                preliminary proposals may change. Future zones and routes are
-                original abstract illustrations, not approved designs.
-              </p>
-              <p className="source-footnote">
-                Contains information licensed under the{" "}
-                <a
-                  href="https://opendata.vancouver.ca/pages/licence/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+            <span className="independent">Independent interaction study</span>
+            <div className="header-actions">
+              {playing && (
+                <button
+                  className="text-button pause-button"
+                  onClick={() => setPlaying(false)}
                 >
-                  Open Government Licence – Vancouver
-                </a>
-                . Source: City of Vancouver. Shoreline: 2002; context
-                footprints: 2015. Elevations are symbolic. No third-party
-                renderings or photographs are reproduced.
-              </p>
-              <a
-                className="repository-link"
-                href="https://github.com/jlsp124/concord-landing-concept/blob/main/SOURCES.md"
-                target="_blank"
-                rel="noopener noreferrer"
+                  <span aria-hidden="true">Ⅱ</span> Pause journey
+                </button>
+              )}
+              <button
+                className="text-button about-button"
+                onClick={() => setAbout(true)}
               >
-                Full source & asset inventory <Arrow diagonal />
-              </a>
+                About & sources <span aria-hidden="true">↗</span>
+              </button>
+            </div>
+          </header>
+
+          {!exploring && (
+            <div className="editorial">
+              {beats.map((beat, index) => {
+                const opacity = beatOpacity(index, progress);
+                return (
+                  <article
+                    key={beat.id}
+                    className={`story-beat beat-${beat.id}`}
+                    aria-hidden={activeBeat !== index}
+                    style={{
+                      opacity,
+                      visibility: opacity < 0.005 ? "hidden" : "visible",
+                      transform: reduced
+                        ? undefined
+                        : `translateY(${(1 - opacity) * 12}px)`,
+                    }}
+                  >
+                    <p className="eyebrow">{beat.eyebrow}</p>
+                    {index === 0 ? (
+                      <h1>
+                        <span>CONCORD</span>
+                        <span>LANDING</span>
+                      </h1>
+                    ) : (
+                      <h2>{beat.title}</h2>
+                    )}
+                    {beat.line && (
+                      <p className="hero-line">
+                        {beat.line} <span aria-hidden="true">—</span>
+                      </p>
+                    )}
+                    {beat.text && <p className="story-text">{beat.text}</p>}
+                    {beat.id === "future" && (
+                      <p className="policy-note">
+                        Conceptual massing · Rezoning application on hold
+                      </p>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+
+          {exploring && (
+            <section
+              ref={exploration}
+              id="exploration"
+              className="exploration"
+              tabIndex={-1}
+              aria-label="Explore the place"
+            >
+              <div className="explore-copy">
+                <p className="eyebrow">
+                  {existing
+                    ? "Existing geographic context"
+                    : (selected?.eyebrow ?? "Explore the relationships")}
+                </p>
+                <h2>
+                  {existing
+                    ? "The place,\nbefore the change."
+                    : (selected?.title ?? "A neighbourhood,\nin relationship.")}
+                </h2>
+                <p className="story-text">
+                  {existing
+                    ? "The same waterfront, before the conceptual changes."
+                    : (selected?.description ??
+                      "Water, public space, connections and everyday life. Select a thread and follow it through the place.")}
+                </p>
+                {selected && !existing && (
+                  <a
+                    className="source-link"
+                    href={selected.source}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {selected.sourceLabel} ↗
+                  </a>
+                )}
+                <nav
+                  className="lens-navigation"
+                  aria-label="Explore the neighbourhood"
+                >
+                  {lenses.map((item) => (
+                    <button
+                      key={item.id}
+                      className={lens === item.id ? "active" : ""}
+                      aria-pressed={lens === item.id}
+                      onClick={() => select(lens === item.id ? "all" : item.id)}
+                    >
+                      <span className="lens-number">{item.number}</span>
+                      <span>{item.short}</span>
+                      <Arrow />
+                    </button>
+                  ))}
+                </nav>
+                <p className="evolution-note">
+                  As the place takes shape, its map can become more specific.
+                </p>
+              </div>
+              <div className="explore-tools">
+                <div
+                  className="comparison"
+                  role="group"
+                  aria-label="Compare existing context and possible future"
+                >
+                  <button
+                    aria-pressed={existing}
+                    onClick={() => setExisting(true)}
+                  >
+                    Existing
+                  </button>
+                  <button
+                    aria-pressed={!existing}
+                    onClick={() => setExisting(false)}
+                  >
+                    Possible future
+                  </button>
+                </div>
+                <button
+                  className="reset-button"
+                  aria-label="Reset camera and show all relationships"
+                  onClick={() => select("all")}
+                >
+                  Reset view <span aria-hidden="true">↺</span>
+                </button>
+              </div>
             </section>
           )}
-          {dialogTab === "controls" && (
-            <section className="dialog-content controls-content">
-              <div className="eyebrow">The place is the interface</div>
-              <h2 id="dialog-title">
-                Make yourself <em>at home.</em>
-              </h2>
-              <dl className="control-list">
-                <div>
-                  <dt>Move through the story</dt>
-                  <dd>
-                    Drag the timeline, select a chapter, or scroll over the
-                    model. The play button takes you on a short guided journey.
-                  </dd>
-                </div>
-                <div>
-                  <dt>Look around</dt>
-                  <dd>
-                    Drag the model to change your viewpoint. Use + and − to
-                    zoom. Switch to Plan for a view from above.
-                  </dd>
-                </div>
-                <div>
-                  <dt>Follow a relationship</dt>
-                  <dd>
-                    Select a numbered marker or a layer. The model highlights
-                    the relevant geography and brings its story into view.
-                  </dd>
-                </div>
-                <div>
-                  <dt>Use the keyboard</dt>
-                  <dd>
-                    Tab through the controls. Arrow keys adjust the timeline.
-                    With the model focused, arrows change the view; + / − zoom;
-                    Home resets the view.
-                  </dd>
-                </div>
-                <div>
-                  <dt>Move at your pace</dt>
-                  <dd>
-                    Use Motion off for immediate transitions. Your device’s
-                    reduced-motion preference is respected.
-                  </dd>
-                </div>
-              </dl>
-            </section>
-          )}
-          <div className="territory-note">
-            On the unceded territories of the Musqueam, Squamish, and
-            Tsleil-Waututh Nations.
+
+          <footer className="film-footer">
+            <div className="location-caption">
+              <span className="caption-rule" aria-hidden="true" />
+              <span>
+                {exploring
+                  ? existing
+                    ? "HISTORICAL BASEMAP · GENERALIZED HEIGHTS"
+                    : "ILLUSTRATIVE VISION · NOT APPROVED ARCHITECTURE"
+                  : progress > 0.43
+                    ? "PLANNING INTENT · CONCEPTUAL TRANSFORMATION"
+                    : "FALSE CREEK · VANCOUVER"}
+              </span>
+            </div>
+            <div className="story-action">
+              {exploring ? (
+                <button
+                  onClick={() => {
+                    select("all");
+                    setExisting(false);
+                    goTo(0);
+                  }}
+                >
+                  <span aria-hidden="true">↑</span> Return to the story
+                </button>
+              ) : (
+                <>
+                  {progress < 0.08 && !reduced && (
+                    <button
+                      className="watch-button"
+                      onClick={() => setPlaying((value) => !value)}
+                    >
+                      <span aria-hidden="true">{playing ? "Ⅱ" : "▷"}</span>
+                      {playing ? "Pause" : "Watch the journey"}
+                    </button>
+                  )}
+                  <button
+                    onClick={() =>
+                      goTo(
+                        progress > 0.86
+                          ? 1
+                          : Math.min(
+                              0.99,
+                              (beats[Math.max(0, activeBeat)]?.end ?? 0.94) +
+                                0.032,
+                            ),
+                      )
+                    }
+                  >
+                    {progress > 0.86
+                      ? "Explore the place"
+                      : progress < 0.08
+                        ? "Scroll to discover"
+                        : "Continue"}
+                    <Arrow down={progress <= 0.86} />
+                  </button>
+                </>
+              )}
+            </div>
+            <div className="chapter-caption" aria-hidden="true">
+              <span>
+                {exploring
+                  ? "07"
+                  : String(Math.max(0, activeBeat) + 1).padStart(2, "0")}
+              </span>
+              <span>
+                {exploring
+                  ? "Explore"
+                  : (beats[Math.max(0, activeBeat)]?.label ?? "The waterfront")}
+              </span>
+            </div>
+          </footer>
+          <div className="story-rule" aria-hidden="true">
+            <span style={{ transform: `scaleX(${progress})` }} />
           </div>
+          {!ready && (
+            <p className="preparing" role="status">
+              Reading the city…
+            </p>
+          )}
+          {fallback && <p className="fallback-status">2D geographic view</p>}
         </div>
+      </main>
+
+      <dialog
+        ref={dialog}
+        className="study-dialog"
+        aria-labelledby="study-title"
+        onCancel={() => setAbout(false)}
+        onClose={() => setAbout(false)}
+      >
+        <button
+          className="dialog-close"
+          onClick={() => setAbout(false)}
+          aria-label="Close about and sources"
+        >
+          ✕
+        </button>
+        <p className="eyebrow">About this study</p>
+        <h2 id="study-title">
+          A place becoming
+          <br />a neighbourhood.
+        </h2>
+        <p className="dialog-intro">
+          An independent conceptual exploration of Concord Landing and Northeast
+          False Creek, based on publicly available information. Not an official
+          Concord Pacific representation.
+        </p>
+        <p>
+          This experience illustrates relationships, planning intent and a
+          possible future. The park, routes and future forms are schematic,
+          original interpretations. They do not represent approved architecture,
+          survey boundaries, homes for sale or a construction programme.
+          Landmark models are simplified representations.
+        </p>
+        <div className="access-options">
+          <label>
+            <input
+              type="checkbox"
+              checked={reduced}
+              onChange={(event) => setMotionOverride(event.target.checked)}
+            />{" "}
+            Still camera & reduced motion
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={flat}
+              onChange={(event) => setFlat(event.target.checked)}
+            />{" "}
+            Use the 2D geographic view
+          </label>
+        </div>
+        <h3>Evidence & context</h3>
+        <ol className="source-list">
+          {sources.map((source) => (
+            <li key={source.title}>
+              <a href={source.url} target="_blank" rel="noreferrer">
+                {source.title} <span aria-hidden="true">↗</span>
+              </a>
+              <p>{source.detail}</p>
+            </li>
+          ))}
+        </ol>
+        <p className="attribution">
+          Contains information licensed under the Open Government Licence —
+          Vancouver and the Open Government Licence — British Columbia. No
+          endorsement by the data providers is implied.
+        </p>
+        <details className="read-story">
+          <summary>Read the story without motion</summary>
+          {beats.slice(1).map((beat) => (
+            <div key={beat.id}>
+              <h3>{beat.title.replace("\n", " ")}</h3>
+              <p>{beat.text}</p>
+            </div>
+          ))}
+        </details>
+        <p className="dialog-credit">
+          Original interaction study · 2026
+          <br />
+          No analytics, registration or sales enquiries.
+        </p>
       </dialog>
-    </div>
+    </>
   );
 }

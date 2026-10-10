@@ -12,12 +12,12 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 
 from shapely.geometry import Polygon, box, shape
-from shapely.ops import transform
+from shapely import transform as shapely_transform
 
 ROOT = Path(__file__).resolve().parents[1]
 API = "https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/"
 ORIGIN = (-123.109, 49.275)
-BOUNDS = (-123.126, 49.266, -123.092, 49.283)
+BOUNDS = (-123.144, 49.264, -123.088, 49.297)
 CLIP = box(*BOUNDS)
 FILTER = "intersects(geom, geom'" + CLIP.wkt + "')"
 X_SCALE = math.cos(math.radians(ORIGIN[1])) * 111320
@@ -43,6 +43,10 @@ def records(dataset, where=None):
 
 def project(x, y, z=None):
     return ((x - ORIGIN[0]) * X_SCALE, (ORIGIN[1] - y) * Z_SCALE)
+
+
+def transform(fn, geom):
+    return shapely_transform(geom, fn, interleaved=False)
 
 
 def points(coords):
@@ -111,10 +115,10 @@ for r in records("parks-polygon-representation", FILTER):
         parks.append({"name": r["park_name"], "rings": rings(p)})
 
 data = {"attribution": "Contains information licensed under the Open Government Licence – Vancouver.",
-        "source": "City of Vancouver", "retrieved": "2026-10-09", "origin": ORIGIN,
+        "source": "City of Vancouver", "retrieved": "2026-10-10", "origin": ORIGIN,
         "bounds": BOUNDS, "land": lands, "shoreline": shorelines,
         "buildings": buildings, "streets": streets, "parks": parks}
-target = ROOT / "src/data/geography.json"
+target = ROOT / "public/data/geography.json"
 target.parent.mkdir(parents=True, exist_ok=True)
 target.write_text(json.dumps(data, separators=(",", ":")) + "\n")
 print(target, target.stat().st_size, "bytes")

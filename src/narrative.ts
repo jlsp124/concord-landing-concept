@@ -1,6 +1,5 @@
 export type Point = [number, number];
 export type Lens = "all" | "water" | "park" | "connect" | "life";
-export type ViewMode = "perspective" | "plan";
 
 export function clamp(value: number, min = 0, max = 1) {
   return Math.max(min, Math.min(max, value));
@@ -21,43 +20,6 @@ export function transformation(value: number) {
     neighbourhood: smoothstep(0.66, 0.98, t),
   };
 }
-
-export function chapter(value: number) {
-  return value < 0.28 ? 0 : value < 0.72 ? 1 : 2;
-}
-
-export const chapters = [
-  {
-    number: "01",
-    label: "Today",
-    kicker: "The final chapter of Concord Pacific Place",
-    title: ["A waterfront.", "An unwritten", "chapter."],
-    italic: 2,
-    description:
-      "Explore the relationships that could shape Concord Landing. From the city we know to a neighbourhood still to come.",
-    caption: "Generalized context · historical basemap",
-  },
-  {
-    number: "02",
-    label: "Reconnection",
-    kicker: "From infrastructure to connection",
-    title: ["Let the city", "meet the", "water."],
-    italic: 2,
-    description:
-      "Move beyond the viaducts. Reveal the connections envisioned between downtown, the park, and False Creek.",
-    caption: "Planning intent · illustrative connections",
-  },
-  {
-    number: "03",
-    label: "A possible future",
-    kicker: "A neighbourhood, in relationship",
-    title: ["A place for", "life to", "unfold."],
-    italic: 2,
-    description:
-      "Waterfront, park, streets, and neighbourhood life. Experience the whole before the details are defined.",
-    caption: "Conceptual zones · no final architecture implied",
-  },
-];
 
 export const lenses: Array<{
   id: Exclude<Lens, "all">;

@@ -1,70 +1,68 @@
-# Concord Landing — An open chapter
+# Concord Landing — The final chapter
 
-An independent, interactive spatial concept for the final chapter of Concord Pacific Place in Northeast False Creek, Vancouver.
+A cinematic, native-scroll interaction study of Northeast False Creek becoming a neighbourhood. One continuous geographic world moves from city context to the site, infrastructure, reconnection, public space and an explicitly schematic future. Exploration follows the story.
 
-**[Explore the public demo](https://jlsp124.github.io/concord-landing-concept/)**
-
-The place becomes the interface. A continuous transformation reveals how infrastructure, city connections, the waterfront, public space, and neighbourhood life relate. An optional short guided journey introduces the idea; four spatial lenses invite deeper exploration.
-
-This is a speculative concept, **not an official Concord Pacific project**. It is not commissioned, approved, or endorsed by Concord Pacific or the City of Vancouver. Public proposals may change. The City’s 811 Carrall / Sub-area 6C application page marked the rezoning application as **on hold** when researched on 9 October 2026.
+**Independent concept.** Not an official Concord Pacific representation or an approved development visualization. The [811 Carrall / Sub-area 6C application](https://www.shapeyourcity.ca/811-carrall-st) was **on hold** when checked on 10 October 2026. No construction schedule, approved tower design, homes for sale or availability is implied.
 
 ## Experience
 
-- Scrub **Today → Reconnection → A possible future** with the timeline or scroll over the model. The sequence expresses planning relationships, not construction phases or a delivery schedule.
-- Drag to look around, zoom, or switch between perspective and a north-up plan. In plan view, dragging pans.
-- Select the waterfront, public realm, connections, or neighbourhood lens through the layer controls or numbered spatial markers.
-- Open About for the product’s evolution, Sources for factual grounding, and the help button for keyboard controls. Motion off gives immediate transitions; device reduced-motion preferences are respected.
+- Scroll normally, use the editorial Continue control, or choose the optional 68-second guided journey. Direct scroll / navigation input stops autoplay. There is no wheel capture.
+- A choreographed perspective camera maintains orientation while changing scale. Viaducts recede, routes appear, the waterfront / park expands and pale conceptual zones emerge. Reverse scrolling reverses the same changes.
+- After the story, explore waterfront, public realm, connections and neighbourhood. Compare existing context with the possible future in the same world.
+- Desktop exploration supports bounded dragging, arrows, plus / minus and Home reset. Phones retain a guided composition and simpler controls.
+- About & sources contains provenance, a readable story, still-camera / reduced-motion mode and a 2D geographic alternative. System reduced-motion preference is respected. WebGL failure also falls back to 2D.
 
-Future development appears as abstract zones and symbolic forms. There are no proposed tower designs, measured heights, residence plans, unit databases, or availability claims. Existing context uses historic City geography: shoreline 2002 and footprints 2015. Elevations and landscape are illustrative. This is not a survey, navigation map, or complete 2026 inventory.
+The real city context uses cropped City of Vancouver geography and 2022 aerial imagery, plus generalized GeoBC 2025 relative roof-height estimates. Dataset dates differ; this is not a complete current survey. The pale future material is intentionally distinct from existing city forms. See [SOURCES.md](SOURCES.md).
 
-## Develop
+## Run locally
 
-Node.js **22.12+**, **24**, or newer supported by Vite; Node 24 is used in CI.
+Node 24 was used for this Windows build. Use a Node release supported by the locked Vite version.
 
-```sh
+```powershell
 npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite, including `/concord-landing-concept/`.
+Open the printed loopback URL with `/concord-landing-concept/`. Both development and preview default to `127.0.0.1`.
 
-```sh
+```powershell
 npm test
 npm run build
 npm run preview
 ```
 
-React, TypeScript, Vite, and direct Three.js. HTML controls and labels sit over an orthographic architectural model. Geometry is merged or instanced, pixel ratio is capped, and WebGL renders only during interaction and transitions. A lightweight SVG plan preserves the story if WebGL is unavailable. All geographic data and fonts are local; there are no runtime map services, accounts, API keys, analytics, or backend.
+Production assets are local: no map-service requests, account, secrets, telemetry or backend. Node / Python tools and GIS intermediates remain project-local. Python is only needed to regenerate geography, not to build or view the committed scene.
 
-## Maintain
-
-- `src/narrative.ts`: editorial copy, source links, conceptual zones, routes, and transformation timing.
-- `src/atlas-engine.ts`: geography, model construction, camera, rendering, and direct manipulation.
-- `src/SpatialScene.tsx`: model lifecycle, accessible markers, labels, and fallback.
-- `src/App.tsx` / `src/style.css`: interface, modal, journey, and responsive composition.
-- `src/data/geography.json`: localized and simplified City GIS extract.
-- [PLAN.md](PLAN.md): research conclusions and design rationale.
-- [SOURCES.md](SOURCES.md): complete source, asset, status, and attribution inventory.
-- [QA.md](QA.md): verification record and practical limitations.
-
-To regenerate the optional geographic extract, use Python 3 with Shapely in an isolated environment:
-
-```sh
+```powershell
 python -m venv .venv
-.venv/bin/pip install shapely
-.venv/bin/python scripts/prepare-geography.py
+.\.venv\Scripts\python.exe -m pip install -r scripts/requirements-gis.txt
+.\.venv\Scripts\python.exe scripts/prepare-geography.py
+.\.venv\Scripts\python.exe scripts/prepare-context.py
 ```
 
-The production build uses the committed extract and does not need Python or network access to the City API. Review dataset dates and planning status before changing factual copy. Future overlays are deliberately original schematic interpretations rather than approved geometry.
+The preparation scripts crop before generating assets, bound download / tile sizes and check free space. Raw files go to ignored `source-assets/raw/`. The context manifest records source tile hashes, CRS and algorithm. Review dataset dates and live planning status before refreshing public claims.
 
-## Deployment
+## Structure and decisions
 
-GitHub Pages uses the Actions workflow in `.github/workflows/pages.yml`. A push to `main` installs locked dependencies, tests, builds, and deploys `dist/`. Pull requests test and build without publishing. The repository’s Pages publishing source is **GitHub Actions**.
+| File                                         | Responsibility                                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `src/scene-score.ts`                         | Pure geographic camera score, editorial beats and story-change timing                |
+| `src/narrative.ts`                           | Conceptual zones / paths, exploration lenses and reversible layer timing             |
+| `src/atlas-engine.ts`                        | Three.js world, materials, demand rendering, quality scaling and bounded exploration |
+| `src/SpatialScene.tsx`                       | Lazy model lifecycle, HTML place labels and 2D geographic fallback                   |
+| `src/App.tsx`, `src/style.css`               | Native scroll, sparse editorial composition, responsive exploration and sources      |
+| `public/data/`                               | Committed local geographic / height / aerial derivatives and provenance              |
+| [PLAN.md](PLAN.md)                           | Creative thesis, acceptance and implementation choices                               |
+| [research/RESEARCH.md](research/RESEARCH.md) | Primary-source research, reference observations and decisions                        |
+| [research/STATUS.md](research/STATUS.md)     | Resumable work checkpoint                                                            |
+| [QA.md](QA.md)                               | Actual verification and untested limits                                              |
 
-Vite’s base is `/concord-landing-concept/`. Keep it consistent if the repository or hosting path changes. The site is one page and needs no history-routing fallback. The HTML includes **noindex, nofollow**; this discourages indexing and does not restrict access to the public link.
+Direct Three.js WebGL fits the custom materials and fallback needs. Context geometry is merged; trees are instanced; DPR is capped and can decrease under sustained frame pressure. Rendering stops when idle or hidden. Future detailed architectural assets can enter through an optimized glTF pipeline without replacing the narrative system.
 
-## Attribution
+## Git and publication
 
-Contains information licensed under the **Open Government Licence – Vancouver**. Source: City of Vancouver. Font licence copies are in `public/licenses/`. No official renderings, third-party photographs, or Concord logo assets are redistributed. See [SOURCES.md](SOURCES.md) for links and processing details.
+The previous implementation is preserved at annotated tag `baseline/windows-handoff-2026-10-10`, commit `06972a8`. The redesign lives on `redesign/windows-spatial-experience`.
 
-Original code is MIT licensed; City data and fonts retain their respective licences. Nothing in this repository grants rights to Concord Pacific’s name or branding, or implies their endorsement.
+The [existing public demo](https://jlsp124.github.io/concord-landing-concept/) remains the prior implementation until a deliberate release. This redesign does not change the live site. Pushing to `main` triggers the existing Pages deployment workflow; pull requests validate without publishing. Vite's base is `/concord-landing-concept/`.
+
+HTML includes `noindex, nofollow`; this discourages indexing and does not provide access control. Original code is MIT licensed. City data, GeoBC data and local fonts retain their respective licences and attribution.

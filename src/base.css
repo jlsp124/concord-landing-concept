@@ -1,0 +1,8 @@
+/* The experience uses native document scrolling. The fixed film is its canvas. */
+html,
+body,
+#root {
+  min-width: 280px;
+  min-height: 100%;
+  overscroll-behavior-y: none;
+}

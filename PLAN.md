@@ -1,45 +1,48 @@
-# Concord Landing — An open chapter
+# Concord Landing — the last piece of the waterfront
 
-## Product direction
+## Creative thesis
 
-An independent interactive architectural atlas of Northeast False Creek. The final chapter of Concord Pacific Place becomes a place to explore. A single persistent spatial composition replaces a conventional scrolling marketing page.
+A blue-hour architectural film moves through the real grain of False Creek; measured city context gives way to luminous, explicitly unresolved future space.
 
-## Research conclusions
+## Content plan
 
-- Concord calls Concord Landing the culminating neighbourhood of Concord Pacific Place.
-- City planning centres on reconnecting downtown, the historic neighbourhoods, parks, and False Creek through a replacement street network and a richer public realm.
-- Georgia Landing, the Dunsmuir Connection, Carrall Greenway, and the Creekside Park extension provide concrete spatial stories.
-- The City's 811 Carrall / Sub-area 6C page states that the rezoning application is on hold (page updated 11 March 2026; checked 9 October 2026). Historic policy and proposal material must not be presented as final architecture, an approved current scheme, or a construction programme.
-- Residential, commercial, social housing, active pedestrian lanes, public space, and waterfront activity belong in the neighbourhood story. Exact quantities are unnecessary for this demo.
+One continuous world, with a native-scroll score rather than stacked page sections:
 
-## Information architecture and interaction
+1. **Place.** Water, the skyline and recognizable anchors establish Northeast False Creek. `CONCORD LANDING / THE FINAL CHAPTER` is the opening poster.
+2. **Context.** Expo lands became Concord Pacific Place; eight neighbourhoods are built and one remains. The camera reads the shoreline before approaching 6C.
+3. **Today.** Show the gap between downtown and the water: surface land, viaducts, surrounding blocks and Creekside Park.
+4. **Reconnection.** Infrastructure recedes, a street network reaches the water, and paths physically trace the relationships envisioned in City policy.
+5. **Public life.** The park extension and waterfront take precedence over buildings.
+6. **An open future.** Restrained translucent volumes suggest mixed uses, not approved architecture. State the application is on hold and the image is conceptual.
+7. **Explore.** Four spatial lenses reveal waterfront, public realm, connections and neighbourhood. Comparison returns the same world to its existing state. A small closing line explains that this map can deepen as the place takes shape.
 
-1. Opening: place visible immediately, minimal editorial introduction, invitation to explore.
-2. One continuous temporal control: **Today → Reconnection → A possible future**. This is a narrative sequence, without dates or construction phases. Viaducts recede; connections and public realm become legible; abstract neighbourhood zones emerge.
-3. A short optional guided journey demonstrates the thesis in under 40 seconds; any direct interaction stops it.
-4. Four spatial lenses: waterfront, parks, connections, neighbourhood life. Selecting a lens highlights its geography, moves the camera deliberately, and displays a short sourced explanation.
-5. Direct manipulation: bounded camera drag, zoom controls, plan/perspective toggle, keyboard control, reset. Spatial markers are real buttons with accessible names.
-6. About / sources: independent status, historical planning context, attribution, and a restrained diagram showing how the interface could deepen as a project becomes defined.
+## Interaction thesis
 
-## Visual system
+- A perspective film camera changes scale slowly while maintaining geographic orientation. Scroll controls position; the page never captures the wheel.
+- Change happens in the city: viaducts recede, routes draw on the ground, public space expands and conceptual areas emerge. Reverse scrolling reverses the change.
+- After the story, selecting a subject reframes and accents its location. Touch stays guided; desktop dragging is bounded. Avoid a floating control dashboard.
 
-- Architectural maquette, actual shoreline and context footprints, symbolic elevations.
-- Deep estuary ink, pale limestone, sage landscape, warm ochre connections.
-- Instrument Serif for editorial moments; DM Sans for navigation and labels. Locally bundled, open-licensed fonts.
-- Fullscreen, generous negative space, fine rules, precise labels, soft directional light. No stock real-estate photography, corporate logo reproduction, or speculative photorealism.
-- Future zones are intentionally abstract, with no unit plans, tower heights, availability, ownership survey, or detailed design implied.
+## Art direction
 
-## Assets and data
+Charcoal, midnight blue water, concrete and warm architectural white. Blue traces connections. Green means vegetation only. Locally licensed Instrument Serif and DM Sans remain the two fonts. Sparse editorial lines sit in deliberately calm camera space. No corporate logo, stock renderings, autoplay sound or decorative particles.
 
-Use a small, localized extract of City open GIS: shoreline 2002, building footprints 2015, public streets, and park polygons. Their dates and generalization are disclosed. Original conceptual overlays are informed by City policy and public diagrams, not traced as a final approved site plan. Official renderings and photos are references only and will not be redistributed. See SOURCES.md.
+## Geographic evidence
 
-## Implementation
+The cropped City shoreline (2002), footprints (2015), roads, parks and 2022 orthophoto establish the real urban grain. GeoBC's 2025 one-metre DSM / DEM rasters supply generalized relative roof heights for 4,624 of 4,681 footprints; 57 use an explicit 9m fallback. The City 2022 LAS host returned 403 to both HEAD and a bounded range GET. Historical basemaps are not a complete present-day survey. Height coverage, algorithm, source CRS and tile hashes are recorded. Science World and BC Place use original simplified landmark geometry.
 
-React + TypeScript + Vite; direct Three.js for an orthographic architectural model; HTML controls and labels. No backend, tracking, remote runtime APIs, or map token. Reduced-motion support, WebGL fallback, mobile composition, scoped resource cleanup, bounded pixel ratio and merged geometry.
+Future park, routes and massing remain original schematic policy illustrations. The City application page says 6C is **on hold**, checked 10 October 2026. No construction schedule is supplied.
 
-## Delivery and quality
+## Implementation choices
 
-- Meaningful Git commits: research/data; spatial experience; polish/verification; deployment.
-- Test production build and relevant interaction logic. Inspect several desktop and phone sizes in a browser; verify keyboard operation, timeline, lenses, drag, view modes, modal focus, reduced motion, fallback, assets, and console.
-- Public repository: jlsp124/concord-landing-concept. GitHub Actions deploys main to GitHub Pages with correct base path.
-- Verify the deployed public page and asset URLs. Keep noindex/nofollow, a persistent independent-concept label, and the full disclaimer in the experience and README.
+React / TypeScript / Vite and Three.js WebGL. The current Three.js manual describes WebGPURenderer as experimental; the scene uses a custom water shader and needs broad graceful fallback. Native scroll plus a small pure camera score is sufficient. Merge context geometry, instance trees, use a lightweight facade shader, cap pixel ratio, stop rendering when idle/hidden, and lower quality under sustained frame pressure. Keep preprocessing reproducible and production assets small.
+
+Blender and glTF remain valid for later architectural assets. An installation is unnecessary for footprint extrusion and procedural landmarks; preserve source geometry before Meshopt / Draco / KTX2 optimization when detailed models arrive.
+
+## Milestones and acceptance
+
+1. Preserve main and record source/reference/workflow findings.
+2. Produce cropped geographic assets and provenance.
+3. Build the continuous story, camera, transformed world and quiet exploration.
+4. Review opening / today / reconnection / future / exploration on desktop and phone. Revise weak compositions.
+5. Verify reverse scroll, keyboard navigation, lenses, comparison, focus management, reduced motion, WebGL fallback, resize and resource lifecycle. Record PASS / FAIL / NOT RUN honestly.
+6. Commit a clean result on the redesign branch and provide a concise delivery report. Do not alter the live main deployment.

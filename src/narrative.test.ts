@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { chapter, transformation } from "./narrative";
+import { transformation } from "./narrative";
+import { storyChange } from "./scene-score";
 
 describe("reversible spatial narrative", () => {
   it("starts with existing infrastructure and finishes with the complete conceptual layers", () => {
@@ -47,9 +48,11 @@ describe("reversible spatial narrative", () => {
       );
     });
   });
-  it("keeps editorial chapters aligned with the geometry sequence", () => {
-    expect(chapter(0)).toBe(0);
-    expect(chapter(0.5)).toBe(1);
-    expect(chapter(1)).toBe(2);
+  it("keeps existing geography for the site story and completes the future before exploration", () => {
+    expect(transformation(storyChange(0.34))).toEqual(transformation(0));
+    const publicLife = transformation(storyChange(0.69));
+    expect(publicLife.connections).toBe(1);
+    expect(publicLife.park).toBeGreaterThan(publicLife.neighbourhood);
+    expect(transformation(storyChange(0.93))).toEqual(transformation(1));
   });
 });

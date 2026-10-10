@@ -9,3 +9,7 @@ dist/
 qa-artifacts/
 tmp/
 *.tsbuildinfo
+source-assets/raw/
+generated/intermediate/
+temp/
+screenshots/

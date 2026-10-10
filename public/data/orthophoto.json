@@ -1,0 +1,15 @@
+{
+  "source": "City of Vancouver Orthophotos 2022",
+  "url": "https://tiles.arcgis.com/tiles/qrcTTRTwUoS8N47o/arcgis/rest/services/Orthophotos_2022/MapServer",
+  "bounds": [
+    -123.144,
+    49.264,
+    -123.088,
+    49.297
+  ],
+  "width": 2609,
+  "height": 2358,
+  "year": 2022,
+  "retrieved": "2026-10-10",
+  "zoom": 16
+}
