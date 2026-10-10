@@ -4,6 +4,7 @@ export type GeographyData = {
   land: number[][][][];
   shoreline: number[][][];
   buildings: Array<{
+    // City object_id can be shared by separate parts of a MultiPolygon.
     id: number;
     rings: number[][][];
     area: number;

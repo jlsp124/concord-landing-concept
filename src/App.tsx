@@ -111,24 +111,31 @@ export default function App() {
 
   useEffect(() => {
     let frame = 0;
+    let position = 0;
+    const distance = () =>
+      Math.max(1, (scroller.current?.offsetHeight ?? 1) - window.innerHeight);
     const update = () => {
       frame = 0;
-      const distance = Math.max(
-        1,
-        (scroller.current?.offsetHeight ?? 1) - window.innerHeight,
-      );
-      setProgress(clamp(window.scrollY / distance));
+      position = clamp(window.scrollY / distance());
+      setProgress(position);
     };
     const request = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
+    const resize = () => {
+      cancelAnimationFrame(frame);
+      frame = 0;
+      setPlaying(false);
+      window.scrollTo({ top: distance() * position, behavior: "instant" });
+      update();
+    };
     window.addEventListener("scroll", request, { passive: true });
-    window.addEventListener("resize", request);
+    window.addEventListener("resize", resize);
     update();
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", request);
-      window.removeEventListener("resize", request);
+      window.removeEventListener("resize", resize);
     };
   }, []);
 
@@ -219,7 +226,8 @@ export default function App() {
         href="#exploration"
         onClick={(event) => {
           event.preventDefault();
-          exploreFocus.current = true;
+          if (exploring) exploration.current?.focus({ preventScroll: true });
+          else exploreFocus.current = true;
           goTo(1);
         }}
       >
@@ -449,7 +457,8 @@ export default function App() {
                     </button>
                   )}
                   <button
-                    onClick={() =>
+                    onClick={() => {
+                      if (progress > 0.86) exploreFocus.current = true;
                       goTo(
                         progress > 0.86
                           ? 1
@@ -458,8 +467,8 @@ export default function App() {
                               (beats[Math.max(0, activeBeat)]?.end ?? 0.94) +
                                 0.032,
                             ),
-                      )
-                    }
+                      );
+                    }}
                   >
                     {progress > 0.86
                       ? "Explore the place"
