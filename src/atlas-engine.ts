@@ -35,6 +35,7 @@ type Anchor = {
   id: string;
   point: Point;
   height: number;
+  width: () => number;
   update: (x: number, y: number, visible: boolean) => void;
 };
 type Options = {
@@ -205,6 +206,7 @@ export class AtlasEngine {
   private invalidated = true;
   private pointer: { x: number; y: number; id: number } | null = null;
   private observer: ResizeObserver | null = null;
+  private anchorWidths: number[] = [];
   private firstFrame = 0;
   private introProgress = 0;
   private slowFrames = 0;
@@ -297,6 +299,7 @@ export class AtlasEngine {
       this.observer = new ResizeObserver(() => this.resize());
       this.observer.observe(mount);
       this.resize();
+      void document.fonts.ready.then(() => this.resize());
     } catch (error) {
       this.dispose();
       throw error;
@@ -882,6 +885,7 @@ export class AtlasEngine {
       this.frameHeight = height;
     this.width = width;
     this.height = height;
+    this.anchorWidths = this.options.anchors.map((anchor) => anchor.width());
     this.renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, this.width < 760 ? 1.3 : 1.5) *
         this.quality,
@@ -1042,7 +1046,7 @@ export class AtlasEngine {
       .join(",");
     this.mount.dataset.fov = this.camera.fov.toFixed(2);
     this.mount.dataset.frameHeight = String(this.frameHeight);
-    this.options.anchors.forEach((anchor) => {
+    this.options.anchors.forEach((anchor, index) => {
       this.markerProjection
         .set(anchor.point[0], anchor.height, anchor.point[1])
         .project(this.camera);
@@ -1052,7 +1056,7 @@ export class AtlasEngine {
         this.markerProjection.z > -1 &&
         this.markerProjection.z < 1 &&
         x > 25 &&
-        x < this.width - 80 &&
+        x < this.width - Math.max(80, this.anchorWidths[index] + 14) &&
         y > 110 &&
         y < this.height - 115;
       const clearText = mobile

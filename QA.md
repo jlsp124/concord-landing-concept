@@ -2,6 +2,20 @@
 
 Windows / local production preview, 10 October 2026. This supersedes the prior prototype's verification. Publication checks for the subsequently authorized release are recorded below.
 
+## Place-focused camera and variable phone pacing — 10 October 2026
+
+This follow-up supersedes the camera / phone pacing details in the earlier polish sections below. The existing design remains intact. Primary City policies and diagrams ground close views of 6C's viaduct edge, the Dunsmuir / Carrall connections, Georgia Landing, the Creekside Park extension north of Science World, and the conceptual neighbourhood / park relationship. Route / park transformation timing is aligned with those views.
+
+PASS: all 22 tests in four files and the TypeScript / production build. Regressions cover location-based focus, scene-space subject framing on desktop / phone, continuous camera velocity, reverse traversal, distinct distance / angle changes, reversible monotonic phone pacing, smooth pacing-window boundaries, geographic reveal timing, stable viewport projection and existing geometry checks.
+
+Production-preview browser checks passed at 1440 × 900, 390 × 844 and 375 × 667. Existing site, connections, landing, park and future views were inspected; native reverse travel returned to the landing. Full-width label bounds prevent the cropped Dunsmuir label observed during the closer phone framing. No horizontal overflow or captured application console warnings / errors were observed.
+
+At 390 × 844 the native range is 12,660px (15 small-viewport heights), down from 17,724px / 21 heights. Four screens / 3,376px reached score 0.349 at the site. The landing close-up was at score 0.565 / scrollY 6,717px. A 211px scroll advanced 0.565 → 0.573 there; the same travel advanced 0.620 → 0.645 between close views. These are browser input / viewport measurements, not physical swipe tests.
+
+Height-only resize at the settled park view, 390 × 844 → 390 × 720, retained scrollY 8,655, score 0.700, camera `1036.1,524.8,569.3` and Science World projection `47.6,566.1`; vertical field of view adjusted 43° → 37.15°. Width changes to the compact phone retained score 0.700, and phone-to-desktop resizing retained the current story position. Continue from reconnection reached score 0.642 using the inverse pace mapping. Exploration / public-realm selection worked. About focus / Escape return worked; manual reduced motion retained camera `730,680,980` across two beats; the 2D alternative and restored WebGL scene worked.
+
+Physical iPhone Safari / Chrome iOS and real touch momentum remain NOT RUN on this Windows machine. Live release evidence is added to the calling workspace's outputs after deployment.
+
 ## Mobile pacing and camera clarification — 10 October 2026
 
 Mobile native scroll travel is now 21 small-viewport heights instead of 6.8 (about 3.1×). At 390 × 844, total travel measured 17,724px; an 8-screen / 6,752px scroll reached progress 0.381, within the existing-site beat, rather than exploration. Continue still reached exploration. Desktop scroll distance is unchanged.

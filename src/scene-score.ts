@@ -52,9 +52,10 @@ function poseOf(orbit: Omit<Orbit, "at">): CameraPose {
   };
 }
 
-// Keep the established opening and exploration compositions. Each change in
-// distance has a subject: approach the site, widen to read the connections,
-// move lower and closer to the waterfront, then rise to reveal the future.
+// City policy identifies these places, rather than the centre of the inlet:
+// 6C's viaduct edge, Dunsmuir / Carrall, Georgia Landing, and the park north of
+// Science World. Each close view follows its subject through the same world.
+// Keep the established opening and exploration compositions.
 const score: Orbit[] = [
   orbitOf({
     at: 0,
@@ -71,35 +72,43 @@ const score: Orbit[] = [
     fov: 43,
   },
   {
-    at: 0.34,
-    radius: 1400,
+    at: 0.355,
+    radius: 950,
     azimuth: radians(12),
-    elevation: radians(22),
-    target: [40, 10, -170],
-    fov: 43,
-  },
-  {
-    at: 0.52,
-    radius: 1750,
-    azimuth: radians(28),
-    elevation: radians(31),
-    target: [65, 12, -155],
-    fov: 43,
-  },
-  {
-    at: 0.69,
-    radius: 1280,
-    azimuth: radians(43),
-    elevation: radians(19),
-    target: [90, 10, -115],
-    fov: 43,
-  },
-  {
-    at: 0.83,
-    radius: 1670,
-    azimuth: radians(47),
     elevation: radians(32),
-    target: [55, 8, -140],
+    target: [105, 14, -160],
+    fov: 43,
+  },
+  {
+    at: 0.475,
+    radius: 1120,
+    azimuth: radians(28),
+    elevation: radians(43),
+    target: [165, 15, -285],
+    fov: 43,
+  },
+  {
+    at: 0.565,
+    radius: 720,
+    azimuth: radians(34),
+    elevation: radians(41),
+    target: [-60, 8, 8],
+    fov: 43,
+  },
+  {
+    at: 0.7,
+    radius: 820,
+    azimuth: radians(50),
+    elevation: radians(29),
+    target: [322, 8, -30],
+    fov: 43,
+  },
+  {
+    at: 0.84,
+    radius: 1000,
+    azimuth: radians(60),
+    elevation: radians(35),
+    target: [95, 22, -140],
     fov: 43,
   },
   orbitOf({ at: 1, position: [730, 680, 980], target: [30, 5, -110], fov: 43 }),
@@ -117,11 +126,11 @@ const portraitScore = score.map((key) => {
 
 // Shape-preserving Hermite slopes: continuous velocity through story beats,
 // without overshooting the radius or target. No stop/start easing at every key.
-function sample(
-  keys: Orbit[],
+function sample<Key extends { at: number }>(
+  keys: Key[],
   index: number,
   progress: number,
-  value: (key: Orbit) => number,
+  value: (key: Key) => number,
 ) {
   const slope = (i: number) => {
     if (i === 0 || i === keys.length - 1) return 0;
@@ -166,8 +175,25 @@ export function cameraAt(value: number, mobile = false): CameraPose {
   });
 }
 
+// Route drawing must reach the waterfront while the camera is there, rather
+// than wait until the park beat. Keep the existing story and its hold / finish
+// points; direct the transformation within them with the same smooth score.
+const changeScore = [
+  { at: 0, value: 0 },
+  { at: 0.39, value: 0 },
+  { at: 0.475, value: 0.35 },
+  { at: 0.565, value: 0.6 },
+  { at: 0.7, value: 0.75 },
+  { at: 0.88, value: 1 },
+  { at: 1, value: 1 },
+];
 export function storyChange(value: number) {
-  return smoothstep(0.39, 0.88, value);
+  const progress = clamp(value);
+  const index = Math.max(
+    1,
+    changeScore.findIndex((key) => key.at >= progress),
+  );
+  return sample(changeScore, index, progress, (key) => key.value);
 }
 
 export const beats = [

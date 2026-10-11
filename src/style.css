@@ -776,8 +776,8 @@ h2 {
     --gutter: 26px;
   }
   .story-scroll {
-    /* Give native touch momentum roughly three times the story travel. */
-    height: 2200svh;
+    /* Quicker travel between places; the score gives close views more space. */
+    height: 1600svh;
   }
   .masthead {
     padding: 20px var(--gutter);

@@ -8,6 +8,8 @@ import {
   scrollProgress,
   scrollRange,
   shouldRescoreViewport,
+  storyProgress,
+  storyScrollFraction,
 } from "./scroll-geometry";
 
 function Icon({
@@ -113,6 +115,7 @@ export default function App() {
   const scroller = useRef<HTMLElement>(null);
   const viewportMeasure = useRef<HTMLDivElement>(null);
   const storyDistance = useRef(1);
+  const phonePacing = useRef(window.innerWidth <= 760);
   const dialog = useRef<HTMLDialogElement>(null);
   const autoplay = useRef(0);
   const exploreFocus = useRef(false);
@@ -170,12 +173,16 @@ export default function App() {
       // toolbar animation must never change the meaning of a scroll position.
       if (mobile) element.style.height = `${contentHeight}px`;
       storyDistance.current = scrollRange(contentHeight, viewportHeight);
+      phonePacing.current = mobile;
       viewport = { width: window.innerWidth, height: window.innerHeight };
       setCompactViewport(mobile && viewportHeight <= 700);
     };
     const update = () => {
       frame = 0;
-      position = scrollProgress(window.scrollY, storyDistance.current);
+      position = storyProgress(
+        scrollProgress(window.scrollY, storyDistance.current),
+        phonePacing.current,
+      );
       // The dynamic viewport can be taller than svh at the end of the page.
       if (
         window.scrollY > 0 &&
@@ -198,7 +205,9 @@ export default function App() {
       setPlaying(false);
       measure();
       window.scrollTo({
-        top: storyDistance.current * position,
+        top:
+          storyDistance.current *
+          storyScrollFraction(position, phonePacing.current),
         behavior: "instant",
       });
       update();
@@ -218,7 +227,8 @@ export default function App() {
   const goTo = (value: number) => {
     setPlaying(false);
     window.scrollTo({
-      top: storyDistance.current * value,
+      top:
+        storyDistance.current * storyScrollFraction(value, phonePacing.current),
       behavior: reduced ? "instant" : "smooth",
     });
   };

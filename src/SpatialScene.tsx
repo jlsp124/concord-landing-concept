@@ -137,6 +137,7 @@ export function SpatialScene(props: Props) {
       id: node.dataset.anchor!,
       point: JSON.parse(node.dataset.point!) as Point,
       height: Number(node.dataset.height ?? 0),
+      width: () => node.offsetWidth,
       update: (x: number, y: number, visible: boolean) => {
         node.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
         node.style.visibility = visible ? "visible" : "hidden";
