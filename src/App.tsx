@@ -1,9 +1,48 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { SpatialScene } from "./SpatialScene";
 import { beatAt, beatOpacity, beats, storyChange } from "./scene-score";
 import { clamp, lenses } from "./narrative";
 import type { Lens } from "./narrative";
 import contextSummary from "./data/context-summary.json";
+import {
+  scrollProgress,
+  scrollRange,
+  shouldRescoreViewport,
+} from "./scroll-geometry";
+
+function Icon({
+  name,
+}: {
+  name: "external" | "reset" | "up" | "play" | "pause" | "close";
+}) {
+  const paths = {
+    external: "M6 18 18 6M7 6h11v11",
+    reset: "M4 8a8 8 0 1 1 0 8M4 3v5h5",
+    up: "M12 19V5M6 11l6-6 6 6",
+    play: "M8 5l11 7-11 7Z",
+    pause: "M9 5v14M15 5v14",
+    close: "M6 6l12 12M18 6 6 18",
+  };
+  return (
+    <svg
+      className="ui-icon"
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        d={paths[name]}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
 
 const sources = [
   {
@@ -44,6 +83,7 @@ function Arrow({ down = false }: { down?: boolean }) {
       width="20"
       height="20"
       aria-hidden="true"
+      focusable="false"
       className={down ? "arrow-down" : ""}
     >
       <path
@@ -71,11 +111,16 @@ function Mark() {
 
 export default function App() {
   const scroller = useRef<HTMLElement>(null);
+  const viewportMeasure = useRef<HTMLDivElement>(null);
+  const storyDistance = useRef(1);
   const dialog = useRef<HTMLDialogElement>(null);
   const autoplay = useRef(0);
   const exploreFocus = useRef(false);
   const exploration = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
+  const [compactViewport, setCompactViewport] = useState(
+    () => window.innerWidth <= 760 && window.innerHeight <= 700,
+  );
   const [ready, setReady] = useState(false);
   const [fallback, setFallback] = useState(false);
   const [lens, setLens] = useState<Lens>("all");
@@ -109,54 +154,78 @@ export default function App() {
     return () => query.removeEventListener("change", update);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let frame = 0;
     let position = 0;
-    const distance = () =>
-      Math.max(1, (scroller.current?.offsetHeight ?? 1) - window.innerHeight);
+    const element = scroller.current!;
+    let viewport = { width: window.innerWidth, height: window.innerHeight };
+    const measure = () => {
+      element.style.height = "";
+      const mobile = window.innerWidth <= 760;
+      const viewportHeight = mobile
+        ? viewportMeasure.current?.offsetHeight || window.innerHeight
+        : window.innerHeight;
+      const contentHeight = element.offsetHeight;
+      // Freeze the mobile scroll score until a width/orientation change. Safari
+      // toolbar animation must never change the meaning of a scroll position.
+      if (mobile) element.style.height = `${contentHeight}px`;
+      storyDistance.current = scrollRange(contentHeight, viewportHeight);
+      viewport = { width: window.innerWidth, height: window.innerHeight };
+      setCompactViewport(mobile && viewportHeight <= 700);
+    };
     const update = () => {
       frame = 0;
-      position = clamp(window.scrollY / distance());
+      position = scrollProgress(window.scrollY, storyDistance.current);
+      // The dynamic viewport can be taller than svh at the end of the page.
+      if (
+        window.scrollY > 0 &&
+        window.scrollY >= element.offsetHeight - window.innerHeight - 1
+      )
+        position = 1;
       setProgress(position);
     };
     const request = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
     const resize = () => {
+      const next = { width: window.innerWidth, height: window.innerHeight };
+      if (!shouldRescoreViewport(viewport, next)) {
+        request();
+        return;
+      }
       cancelAnimationFrame(frame);
       frame = 0;
       setPlaying(false);
-      window.scrollTo({ top: distance() * position, behavior: "instant" });
+      measure();
+      window.scrollTo({
+        top: storyDistance.current * position,
+        behavior: "instant",
+      });
       update();
     };
     window.addEventListener("scroll", request, { passive: true });
     window.addEventListener("resize", resize);
+    measure();
     update();
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", request);
       window.removeEventListener("resize", resize);
+      element.style.height = "";
     };
   }, []);
 
   const goTo = (value: number) => {
     setPlaying(false);
-    const distance = Math.max(
-      1,
-      (scroller.current?.offsetHeight ?? 1) - window.innerHeight,
-    );
     window.scrollTo({
-      top: distance * value,
+      top: storyDistance.current * value,
       behavior: reduced ? "instant" : "smooth",
     });
   };
 
   useEffect(() => {
     if (!playing || reduced || about) return;
-    const distance = Math.max(
-      1,
-      (scroller.current?.offsetHeight ?? 1) - window.innerHeight,
-    );
+    const distance = storyDistance.current;
     const startY = window.scrollY;
     const remaining = Math.max(0, distance - startY);
     const duration = (remaining / distance) * 68000;
@@ -239,7 +308,12 @@ export default function App() {
         aria-label="The story of Concord Landing"
       >
         <div
-          className={`experience ${ready ? "is-ready" : ""} ${exploring ? "is-exploring" : ""}`}
+          ref={viewportMeasure}
+          className="viewport-measure"
+          aria-hidden="true"
+        />
+        <div
+          className={`experience ${ready ? "is-ready" : ""} ${exploring ? "is-exploring" : ""} ${compactViewport ? "compact-viewport" : ""}`}
           data-progress={progress.toFixed(3)}
         >
           <SpatialScene
@@ -273,21 +347,20 @@ export default function App() {
                 LANDING
               </span>
             </button>
-            <span className="independent">Independent interaction study</span>
             <div className="header-actions">
               {playing && (
                 <button
                   className="text-button pause-button"
                   onClick={() => setPlaying(false)}
                 >
-                  <span aria-hidden="true">Ⅱ</span> Pause journey
+                  <Icon name="pause" /> Pause journey
                 </button>
               )}
               <button
                 className="text-button about-button"
                 onClick={() => setAbout(true)}
               >
-                About & sources <span aria-hidden="true">↗</span>
+                About & sources <Icon name="external" />
               </button>
             </div>
           </header>
@@ -324,11 +397,6 @@ export default function App() {
                       </p>
                     )}
                     {beat.text && <p className="story-text">{beat.text}</p>}
-                    {beat.id === "future" && (
-                      <p className="policy-note">
-                        Conceptual massing · Rezoning application on hold
-                      </p>
-                    )}
                   </article>
                 );
               })}
@@ -367,7 +435,7 @@ export default function App() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {selected.sourceLabel} ↗
+                    {selected.sourceLabel} <Icon name="external" />
                   </a>
                 )}
                 <nav
@@ -415,7 +483,7 @@ export default function App() {
                   aria-label="Reset camera and show all relationships"
                   onClick={() => select("all")}
                 >
-                  Reset view <span aria-hidden="true">↺</span>
+                  Reset view <Icon name="reset" />
                 </button>
               </div>
             </section>
@@ -424,15 +492,7 @@ export default function App() {
           <footer className="film-footer">
             <div className="location-caption">
               <span className="caption-rule" aria-hidden="true" />
-              <span>
-                {exploring
-                  ? existing
-                    ? "HISTORICAL BASEMAP · GENERALIZED HEIGHTS"
-                    : "ILLUSTRATIVE VISION · NOT APPROVED ARCHITECTURE"
-                  : progress > 0.43
-                    ? "PLANNING INTENT · CONCEPTUAL TRANSFORMATION"
-                    : "FALSE CREEK · VANCOUVER"}
-              </span>
+              <span>FALSE CREEK · VANCOUVER</span>
             </div>
             <div className="story-action">
               {exploring ? (
@@ -443,7 +503,7 @@ export default function App() {
                     goTo(0);
                   }}
                 >
-                  <span aria-hidden="true">↑</span> Return to the story
+                  <Icon name="up" /> Return to the story
                 </button>
               ) : (
                 <>
@@ -452,7 +512,7 @@ export default function App() {
                       className="watch-button"
                       onClick={() => setPlaying((value) => !value)}
                     >
-                      <span aria-hidden="true">{playing ? "Ⅱ" : "▷"}</span>
+                      <Icon name={playing ? "pause" : "play"} />
                       {playing ? "Pause" : "Watch the journey"}
                     </button>
                   )}
@@ -517,7 +577,7 @@ export default function App() {
           onClick={() => setAbout(false)}
           aria-label="Close about and sources"
         >
-          ✕
+          <Icon name="close" />
         </button>
         <p className="eyebrow">About this study</p>
         <h2 id="study-title">
@@ -525,9 +585,9 @@ export default function App() {
           <br />a neighbourhood.
         </h2>
         <p className="dialog-intro">
-          An independent conceptual exploration of Concord Landing and Northeast
-          False Creek, based on publicly available information. Not an official
-          Concord Pacific representation.
+          This is an independent conceptual exploration of Concord Landing and
+          Northeast False Creek based on publicly available information. It is
+          not an official Concord Pacific project presentation.
         </p>
         <p>
           This experience illustrates relationships, planning intent and a
@@ -559,7 +619,7 @@ export default function App() {
           {sources.map((source) => (
             <li key={source.title}>
               <a href={source.url} target="_blank" rel="noreferrer">
-                {source.title} <span aria-hidden="true">↗</span>
+                {source.title} <Icon name="external" />
               </a>
               <p>{source.detail}</p>
             </li>

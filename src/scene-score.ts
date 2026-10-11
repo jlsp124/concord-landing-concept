@@ -3,40 +3,166 @@ import { clamp, smoothstep } from "./narrative";
 export type Vector = [number, number, number];
 export type CameraPose = { position: Vector; target: Vector; fov: number };
 
-// A score in geographic metres, not a construction timeline.
-// The camera stays south of the site: downtown left, Science World right.
-const score: Array<CameraPose & { at: number }> = [
-  { at: 0, position: [820, 710, 1480], target: [-170, 25, -250], fov: 42 },
-  { at: 0.17, position: [620, 1380, 1880], target: [-250, 0, -190], fov: 43 },
-  { at: 0.34, position: [660, 490, 800], target: [50, 10, -170], fov: 43 },
-  { at: 0.52, position: [440, 580, 750], target: [80, 0, -160], fov: 43 },
-  { at: 0.69, position: [510, 190, 420], target: [300, 8, -50], fov: 45 },
-  { at: 0.83, position: [640, 420, 690], target: [65, 8, -160], fov: 42 },
-  { at: 1, position: [730, 680, 980], target: [30, 5, -110], fov: 43 },
-];
+export function motionBlend(deltaMs: number) {
+  return 1 - Math.exp(-Math.max(0, deltaMs) / 120);
+}
 
-const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+export function portraitFov(fov: number, height: number, frameHeight: number) {
+  // A phone toolbar resize reveals more scene instead of zooming the model.
+  return (
+    (Math.atan(
+      (Math.tan((fov * Math.PI) / 360) * height) / Math.max(1, frameHeight),
+    ) *
+      360) /
+    Math.PI
+  );
+}
+
+type Orbit = {
+  at: number;
+  radius: number;
+  azimuth: number;
+  elevation: number;
+  target: Vector;
+  fov: number;
+};
+const radians = (degrees: number) => (degrees * Math.PI) / 180;
+function orbitOf(pose: CameraPose & { at: number }): Orbit {
+  const [x, y, z] = pose.position.map((v, i) => v - pose.target[i]);
+  const radius = Math.hypot(x, y, z);
+  return {
+    at: pose.at,
+    radius,
+    azimuth: Math.atan2(x, z),
+    elevation: Math.asin(y / radius),
+    target: pose.target,
+    fov: pose.fov,
+  };
+}
+function poseOf(orbit: Omit<Orbit, "at">): CameraPose {
+  const horizontal = orbit.radius * Math.cos(orbit.elevation);
+  return {
+    position: [
+      orbit.target[0] + horizontal * Math.sin(orbit.azimuth),
+      orbit.target[1] + orbit.radius * Math.sin(orbit.elevation),
+      orbit.target[2] + horizontal * Math.cos(orbit.azimuth),
+    ],
+    target: orbit.target,
+    fov: orbit.fov,
+  };
+}
+
+// Keep the established opening and exploration compositions. Approach the site
+// once, then reveal it with a slow eastward orbit rather than repeated dollies.
+const score: Orbit[] = [
+  orbitOf({
+    at: 0,
+    position: [820, 710, 1480],
+    target: [-170, 25, -250],
+    fov: 42,
+  }),
+  {
+    at: 0.17,
+    radius: 1950,
+    azimuth: radians(24),
+    elevation: radians(34),
+    target: [-200, 16, -185],
+    fov: 43,
+  },
+  {
+    at: 0.34,
+    radius: 1530,
+    azimuth: radians(12),
+    elevation: radians(22),
+    target: [40, 10, -170],
+    fov: 43,
+  },
+  {
+    at: 0.52,
+    radius: 1510,
+    azimuth: radians(20),
+    elevation: radians(22),
+    target: [65, 12, -155],
+    fov: 43,
+  },
+  {
+    at: 0.69,
+    radius: 1485,
+    azimuth: radians(27),
+    elevation: radians(18),
+    target: [90, 10, -115],
+    fov: 43,
+  },
+  {
+    at: 0.83,
+    radius: 1470,
+    azimuth: radians(31),
+    elevation: radians(21),
+    target: [55, 8, -140],
+    fov: 43,
+  },
+  orbitOf({ at: 1, position: [730, 680, 980], target: [30, 5, -110], fov: 43 }),
+];
+const portraitScore = score.map((key) => {
+  const pose = poseOf(key);
+  const scale = key.at === 0 ? 1.12 : key.at === 0.17 ? 1.18 : 1.3;
+  const position = pose.position.map(
+    (v, i) => pose.target[i] + (v - pose.target[i]) * scale,
+  ) as Vector;
+  const target = [...pose.target] as Vector;
+  target[1] += key.at === 0 ? 100 : 85;
+  return orbitOf({ at: key.at, position, target, fov: key.fov });
+});
+
+// Shape-preserving Hermite slopes: continuous velocity through story beats,
+// without overshooting the radius or target. No stop/start easing at every key.
+function sample(
+  keys: Orbit[],
+  index: number,
+  progress: number,
+  value: (key: Orbit) => number,
+) {
+  const slope = (i: number) => {
+    if (i === 0 || i === keys.length - 1) return 0;
+    const before = keys[i].at - keys[i - 1].at;
+    const after = keys[i + 1].at - keys[i].at;
+    const a = (value(keys[i]) - value(keys[i - 1])) / before;
+    const b = (value(keys[i + 1]) - value(keys[i])) / after;
+    if (a * b <= 0) return 0;
+    const w1 = 2 * after + before,
+      w2 = after + 2 * before;
+    return (w1 + w2) / (w1 / a + w2 / b);
+  };
+  const a = keys[index - 1],
+    b = keys[index];
+  const span = b.at - a.at;
+  const t = (progress - a.at) / span,
+    t2 = t * t,
+    t3 = t2 * t;
+  return (
+    (2 * t3 - 3 * t2 + 1) * value(a) +
+    (t3 - 2 * t2 + t) * span * slope(index - 1) +
+    (-2 * t3 + 3 * t2) * value(b) +
+    (t3 - t2) * span * slope(index)
+  );
+}
 
 export function cameraAt(value: number, mobile = false): CameraPose {
   const progress = clamp(value);
-  const index = score.findIndex((key) => key.at >= progress);
-  const right = score[Math.max(1, index)];
-  const left = score[Math.max(0, index - 1)];
-  const t = smoothstep(left.at, right.at, progress);
-  const position = left.position.map((a, i) =>
-    mix(a, right.position[i], t),
-  ) as Vector;
-  const target = left.target.map((a, i) =>
-    mix(a, right.target[i], t),
-  ) as Vector;
-  if (mobile) {
-    // Back away without rotating the geographic frame. A portrait is guided.
-    const distance = mix(1.12, 1.3, smoothstep(0.2, 0.3, progress));
-    for (let i = 0; i < 3; i++)
-      position[i] = target[i] + (position[i] - target[i]) * distance;
-    target[1] += mix(100, 85, smoothstep(0.1, 0.2, progress));
-  }
-  return { position, target, fov: mix(left.fov, right.fov, t) };
+  const keys = mobile ? portraitScore : score;
+  const index = Math.max(
+    1,
+    keys.findIndex((key) => key.at >= progress),
+  );
+  const read = (value: (key: Orbit) => number) =>
+    sample(keys, index, progress, value);
+  return poseOf({
+    radius: read((key) => key.radius),
+    azimuth: read((key) => key.azimuth),
+    elevation: read((key) => key.elevation),
+    target: [0, 1, 2].map((i) => read((key) => key.target[i])) as Vector,
+    fov: read((key) => key.fov),
+  });
 }
 
 export function storyChange(value: number) {
@@ -102,7 +228,7 @@ export const beats = [
     eyebrow: "A possible neighbourhood",
     title: "The next chapter\nis still open.",
     line: "",
-    text: "Homes, work and public life could meet here. The forms you see are a study of relationships, not final architecture.",
+    text: "Homes, work and public life could meet here.",
   },
 ] as const;
 

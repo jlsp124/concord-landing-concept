@@ -7,10 +7,10 @@ A cinematic, native-scroll interaction study of Northeast False Creek becoming a
 ## Experience
 
 - Scroll normally, use the editorial Continue control, or choose the optional 68-second guided journey. Direct scroll / navigation input stops autoplay. There is no wheel capture.
-- A choreographed perspective camera maintains orientation while changing scale. Viaducts recede, routes appear, the waterfront / park expands and pale conceptual zones emerge. Reverse scrolling reverses the same changes.
+- A choreographed perspective camera approaches from city to site, then reveals the place through a gentle orbit and lateral movement. Viaducts recede, routes appear, the waterfront / park expands and pale conceptual zones emerge. Reverse scrolling reverses the same changes.
 - After the story, explore waterfront, public realm, connections and neighbourhood. Compare existing context with the possible future in the same world.
 - Desktop exploration supports bounded dragging, arrows, plus / minus and Home reset. Phones retain a guided composition and simpler controls.
-- About & sources contains provenance, a readable story, still-camera / reduced-motion mode and a 2D geographic alternative. System reduced-motion preference is respected. WebGL failure also falls back to 2D.
+- About & sources contains the independent-concept framing, provenance, a readable story, still-camera / reduced-motion mode and a 2D geographic alternative. System reduced-motion preference is respected. WebGL failure also falls back to 2D. Controls use inline SVG; mobile scroll scoring and camera framing stay stable during height-only viewport changes.
 
 The real city context uses cropped City of Vancouver geography and 2022 aerial imagery, plus generalized GeoBC 2025 relative roof-height estimates. Dataset dates differ; this is not a complete current survey. The pale future material is intentionally distinct from existing city forms. See [SOURCES.md](SOURCES.md).
 
@@ -46,18 +46,19 @@ The preparation scripts crop before generating assets, bound download / tile siz
 
 ## Structure and decisions
 
-| File                                         | Responsibility                                                                       |
-| -------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `src/scene-score.ts`                         | Pure geographic camera score, editorial beats and story-change timing                |
-| `src/narrative.ts`                           | Conceptual zones / paths, exploration lenses and reversible layer timing             |
-| `src/atlas-engine.ts`                        | Three.js world, materials, demand rendering, quality scaling and bounded exploration |
-| `src/SpatialScene.tsx`                       | Lazy model lifecycle, HTML place labels and 2D geographic fallback                   |
-| `src/App.tsx`, `src/style.css`               | Native scroll, sparse editorial composition, responsive exploration and sources      |
-| `public/data/`                               | Committed local geographic / height / aerial derivatives and provenance              |
-| [PLAN.md](PLAN.md)                           | Creative thesis, acceptance and implementation choices                               |
-| [research/RESEARCH.md](research/RESEARCH.md) | Primary-source research, reference observations and decisions                        |
-| [research/STATUS.md](research/STATUS.md)     | Resumable work checkpoint                                                            |
-| [QA.md](QA.md)                               | Actual verification and untested limits                                              |
+| File                                              | Responsibility                                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `src/scene-score.ts`                              | Pure geographic camera score, editorial beats and story-change timing                |
+| `src/scroll-geometry.ts`, `src/scene-geometry.ts` | Stable native-scroll scoring and joined route geometry / tree clearances             |
+| `src/narrative.ts`                                | Conceptual zones / paths, exploration lenses and reversible layer timing             |
+| `src/atlas-engine.ts`                             | Three.js world, materials, demand rendering, quality scaling and bounded exploration |
+| `src/SpatialScene.tsx`                            | Lazy model lifecycle, HTML place labels and 2D geographic fallback                   |
+| `src/App.tsx`, `src/style.css`                    | Native scroll, sparse editorial composition, responsive exploration and sources      |
+| `public/data/`                                    | Committed local geographic / height / aerial derivatives and provenance              |
+| [PLAN.md](PLAN.md)                                | Creative thesis, acceptance and implementation choices                               |
+| [research/RESEARCH.md](research/RESEARCH.md)      | Primary-source research, reference observations and decisions                        |
+| [research/STATUS.md](research/STATUS.md)          | Resumable work checkpoint                                                            |
+| [QA.md](QA.md)                                    | Actual verification and untested limits                                              |
 
 Direct Three.js WebGL fits the custom materials and fallback needs. Context geometry is merged; trees are instanced; DPR is capped and can decrease under sustained frame pressure. Rendering stops when idle or hidden. Future detailed architectural assets can enter through an optimized glTF pipeline without replacing the narrative system.
 

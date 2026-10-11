@@ -88,7 +88,7 @@ export const lenses: Array<{
       "Homes, commercial space, social housing, and active pedestrian lanes form part of the public 6C proposal. Their relationship to the park and water is the story here.",
     note: "Abstract zones. No buildings, plans, or availability represented.",
     source: "https://www.shapeyourcity.ca/811-carrall-st",
-    sourceLabel: "City Sub-area 6C proposal · on hold",
+    sourceLabel: "City Sub-area 6C proposal",
     point: [90, -145],
   },
 ];

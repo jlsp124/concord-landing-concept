@@ -11,7 +11,8 @@ import {
   transformation,
 } from "./narrative";
 import type { Lens, Point } from "./narrative";
-import { cameraAt } from "./scene-score";
+import { cameraAt, motionBlend, portraitFov } from "./scene-score";
+import { pathDistance, ribbonVertices } from "./scene-geometry";
 
 type State = {
   story: number;
@@ -46,12 +47,12 @@ type Options = {
 const BACKGROUND = "#0a1525";
 const PALETTE = {
   land: "#596673",
-  building: "#bbc8d3",
-  park: "#465747",
-  futurePark: "#879678",
+  building: "#c3cbd0",
+  park: "#425c40",
+  futurePark: "#638253",
   road: "#9ba5af",
-  route: "#91bbff",
-  life: "#c2ddfc",
+  route: "#79a8eb",
+  life: "#b2d2f6",
   viaduct: "#afaca4",
 };
 
@@ -97,21 +98,8 @@ function lineGeometry(points: number[][], height = 0) {
 }
 
 function ribbon(points: number[][], width: number, height: number) {
-  // Flat strip; architectural model roads never acquire pipe-like silhouettes.
-  const positions: number[] = [];
-  for (let i = 0; i < points.length - 1; i++) {
-    const [x1, z1] = points[i],
-      [x2, z2] = points[i + 1];
-    const length = Math.hypot(x2 - x1, z2 - z1);
-    if (length < 0.01) continue;
-    const dx = ((-(z2 - z1) / length) * width) / 2,
-      dz = (((x2 - x1) / length) * width) / 2;
-    const a = [x1 + dx, height, z1 + dz],
-      b = [x1 - dx, height, z1 - dz];
-    const c = [x2 + dx, height, z2 + dz],
-      d = [x2 - dx, height, z2 - dz];
-    positions.push(...a, ...c, ...b, ...b, ...c, ...d);
-  }
+  // Joined, ground-level strips keep the original geographic alignment.
+  const positions = ribbonVertices(points, width, height);
   const g = new THREE.BufferGeometry();
   g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   g.computeVertexNormals();
@@ -162,7 +150,7 @@ export class AtlasEngine {
     opacity: 0.48,
   });
   private readonly parkMaterial = mat(PALETTE.futurePark, true);
-  private readonly treeMaterial = mat("#7f956b", true);
+  private readonly treeMaterial = mat("#62864f", true);
   private readonly lifeMaterial = mat(PALETTE.life, true);
   private readonly connectionMaterial = new THREE.MeshBasicMaterial({
     color: PALETTE.route,
@@ -171,7 +159,7 @@ export class AtlasEngine {
     opacity: 0,
   });
   private readonly waterLineMaterial = new THREE.MeshBasicMaterial({
-    color: "#a4ccff",
+    color: "#91baf2",
     side: THREE.DoubleSide,
     transparent: true,
     opacity: 0,
@@ -188,6 +176,7 @@ export class AtlasEngine {
   private readonly focal = new THREE.Vector3(0, 0, -80);
   private readonly targetFocal = new THREE.Vector3(0, 0, -80);
   private readonly color = new THREE.Color();
+  private readonly contextTrees: Point[] = [];
   private readonly resources = new Set<
     THREE.BufferGeometry | THREE.Material | THREE.Texture
   >();
@@ -209,6 +198,7 @@ export class AtlasEngine {
   private internalZoom = 1;
   private width = 1;
   private height = 1;
+  private frameHeight = 1;
   private frame = 0;
   private lastTime = 0;
   private disposed = false;
@@ -216,6 +206,7 @@ export class AtlasEngine {
   private pointer: { x: number; y: number; id: number } | null = null;
   private observer: ResizeObserver | null = null;
   private firstFrame = 0;
+  private introProgress = 0;
   private slowFrames = 0;
   private quality = 1;
   private cleanup: Array<() => void> = [];
@@ -262,7 +253,7 @@ export class AtlasEngine {
     this.waterMaterial = new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        ink: { value: new THREE.Color("#102336") },
+        ink: { value: new THREE.Color("#102943") },
       },
       vertexShader: `varying vec2 waterPosition; void main(){ waterPosition=position.xy; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
       fragmentShader: `uniform float time; uniform vec3 ink; varying vec2 waterPosition;
@@ -421,7 +412,7 @@ export class AtlasEngine {
           float pane=step(0.22,fract((vCity.x+vCity.z)*0.18))*step(0.24,fract(vCity.y/3.3))*wall;
           float lamp=step(0.973,fract(sin(dot(floor(vCity/vec3(5.5,3.3,5.5)),vec3(12.9898,78.233,43.21)))*43758.5453));
           diffuseColor.rgb*=mix(1.0,0.78,pane);
-          totalEmissiveRadiance+=vec3(0.47,0.28,0.13)*lamp*pane;
+          totalEmissiveRadiance+=vec3(0.60,0.33,0.14)*lamp*pane;
         `,
         );
     };
@@ -625,14 +616,25 @@ export class AtlasEngine {
           minX + rng() * (maxX - minX),
           minZ + rng() * (maxZ - minZ),
         ];
-        if (inside(point, ring)) trees.push(point);
+        if (
+          inside(point, ring) &&
+          !park.rings.slice(1).some((hole) => inside(point, hole)) &&
+          pathDistance(point, [...ring, ring[0]]) > 4.8 &&
+          Math.hypot(point[0] - 388, point[1] - 178) > 63 &&
+          trees.every(
+            (other) =>
+              Math.hypot(point[0] - other[0], point[1] - other[1]) >= 10,
+          )
+        )
+          trees.push(point);
       }
     });
-    this.makeTrees(trees, mat("#687f59"), this.world, 4.1);
+    this.contextTrees.push(...trees);
+    this.makeTrees(trees, mat("#5b8050"), this.world, 4.1);
     const shoreMat = new THREE.LineBasicMaterial({
       color: "#9cb6d3",
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.25,
     });
     geography.shoreline.forEach((points) => {
       const shore = new THREE.Line(lineGeometry(points, 0.5), shoreMat);
@@ -649,16 +651,23 @@ export class AtlasEngine {
     size: number,
     ground = 0,
   ) {
-    const geometry = new THREE.IcosahedronGeometry(1, 1);
+    const geometry = new THREE.SphereGeometry(1, 8, 6);
     const trees = new THREE.InstancedMesh(geometry, material, points.length);
     const dummy = new THREE.Object3D();
     const rng = random(42);
+    const tint = new THREE.Color();
     points.forEach(([x, z], index) => {
-      const r = size * (0.7 + rng() * 0.6);
+      const r = size * (0.85 + rng() * 0.3);
       dummy.position.set(x, ground + r * 1.2, z);
-      dummy.scale.set(r, r * 1.35, r);
+      dummy.scale.set(r * 0.94, r * 1.25, r);
+      dummy.rotation.y = rng() * Math.PI;
       dummy.updateMatrix();
       trees.setMatrixAt(index, dummy.matrix);
+      const shade = 0.88 + rng() * 0.12;
+      trees.setColorAt(
+        index,
+        tint.setRGB(shade, Math.min(1, shade + 0.03), shade * 0.94),
+      );
     });
     trees.castShadow = true;
     trees.receiveShadow = true;
@@ -693,7 +702,14 @@ export class AtlasEngine {
       const point: Point = [230 + rng() * 200, -195 + rng() * 408];
       if (
         inside(point, futurePark) &&
-        Math.hypot(point[0] - 388, point[1] - 178) > 65
+        Math.hypot(point[0] - 388, point[1] - 178) > 65 &&
+        pathDistance(point, futurePark) > 5.5 &&
+        Object.values(routes).every(
+          (route) => pathDistance(point, route) > 7,
+        ) &&
+        [...this.contextTrees, ...trees].every(
+          (other) => Math.hypot(point[0] - other[0], point[1] - other[1]) >= 11,
+        )
       )
         trees.push(point);
     }
@@ -721,9 +737,9 @@ export class AtlasEngine {
       const cap = new THREE.Line(
         lineGeometry([...zone, zone[0]], 20),
         new THREE.LineBasicMaterial({
-          color: "#d1e5ff",
+          color: "#b4d2f4",
           transparent: true,
-          opacity: 0.75,
+          opacity: 0.55,
         }),
       );
       this.neighbourhood.add(cap);
@@ -762,7 +778,13 @@ export class AtlasEngine {
 
   private registerInputs() {
     this.listen("pointerdown", (event) => {
-      if (!this.state.explore || this.width < 760 || event.button !== 0) return;
+      if (
+        !this.state.explore ||
+        this.width <= 760 ||
+        event.pointerType === "touch" ||
+        event.button !== 0
+      )
+        return;
       this.mount.focus({ preventScroll: true });
       this.mount.setPointerCapture(event.pointerId);
       this.pointer = {
@@ -854,8 +876,12 @@ export class AtlasEngine {
 
   private resize() {
     if (this.disposed) return;
-    this.width = Math.max(1, this.mount.clientWidth);
-    this.height = Math.max(1, this.mount.clientHeight);
+    const width = Math.max(1, this.mount.clientWidth);
+    const height = Math.max(1, this.mount.clientHeight);
+    if (this.frameHeight === 1 || width !== this.width)
+      this.frameHeight = height;
+    this.width = width;
+    this.height = height;
     this.renderer.setPixelRatio(
       Math.min(window.devicePixelRatio, this.width < 760 ? 1.3 : 1.5) *
         this.quality,
@@ -892,19 +918,22 @@ export class AtlasEngine {
       );
       this.renderer.setSize(this.width, this.height);
     }
-    const damping = this.state.reduced ? 1 : 1 - Math.exp(-delta / 120);
+    const damping = this.state.reduced ? 1 : motionBlend(delta);
     this.currentStory += (this.state.story - this.currentStory) * damping;
     this.currentProgress +=
       (this.state.progress - this.currentProgress) * damping;
     this.yaw += (this.targetYaw - this.yaw) * damping;
     this.pitch += (this.targetPitch - this.pitch) * damping;
     this.currentZoom += (this.internalZoom - this.currentZoom) * damping;
-    const mobile = this.width < 760;
+    const mobile = this.width <= 760;
     const pose = cameraAt(this.state.reduced ? 1 : this.currentStory, mobile);
-    const intro =
-      this.state.reduced || this.state.story > 0.02
-        ? 1
-        : smoothstep(0, 4200, time - this.firstFrame);
+    const intro = (this.introProgress = this.state.reduced
+      ? 1
+      : Math.max(
+          this.introProgress,
+          smoothstep(0, 4200, time - this.firstFrame),
+          smoothstep(0, 0.08, this.currentStory),
+        ));
     pose.position[1] -= (1 - intro) * 140;
     pose.position[2] += (1 - intro) * 160;
     if (
@@ -924,22 +953,26 @@ export class AtlasEngine {
       pose.target[2] += (focus[1] - pose.target[2]) * 0.65;
     }
     this.targetFocal.fromArray(pose.target);
-    this.focal.lerp(this.targetFocal, first ? 1 : damping);
-    const direction = new THREE.Vector3(...pose.position).sub(
-      new THREE.Vector3(...pose.target),
-    );
+    // Scroll is already damped in score space. A second Cartesian interpolation
+    // cuts across the orbit during touch momentum and introduces radial drift.
+    if (this.state.explore)
+      this.focal.lerp(this.targetFocal, first ? 1 : damping);
+    else this.focal.copy(this.targetFocal);
+    const direction = new THREE.Vector3(...pose.position).sub(this.focal);
     direction
       .applyEuler(new THREE.Euler(this.pitch, this.yaw, 0, "YXZ"))
       .divideScalar(this.currentZoom);
     const desired = this.focal.clone().add(direction);
-    this.camera.position.lerp(desired, first ? 1 : damping);
+    this.camera.position.copy(desired);
     this.camera.aspect = this.width / this.height;
-    this.camera.fov = pose.fov;
+    this.camera.fov = mobile
+      ? portraitFov(pose.fov, this.height, this.frameHeight)
+      : pose.fov;
     this.camera.setViewOffset(
       this.width,
       this.height,
       mobile ? 0 : -this.width * 0.12,
-      0,
+      mobile ? (this.height - this.frameHeight) / 2 : 0,
       this.width,
       this.height,
     );
@@ -959,6 +992,7 @@ export class AtlasEngine {
     this.viaducts.position.y = -(1 - t.existing) * 25;
     this.parkMaterial.opacity = t.park * opacity("park") * 0.9;
     this.treeMaterial.opacity = t.park * opacity("park");
+    this.treeMaterial.depthWrite = t.park > 0.98 && opacity("park") === 1;
     this.park.visible = t.park > 0.005;
     this.park.scale.y = Math.max(0.01, t.park);
     this.lifeMaterial.opacity = t.neighbourhood * opacity("life") * 0.42;
@@ -966,9 +1000,12 @@ export class AtlasEngine {
     this.neighbourhood.scale.y = Math.max(0.01, t.neighbourhood);
     this.neighbourhood.children.forEach((child) => {
       if (child instanceof THREE.Line)
-        child.material.opacity = t.neighbourhood * opacity("life") * 0.9;
+        child.material.opacity = t.neighbourhood * opacity("life") * 0.55;
     });
-    this.connectionMaterial.opacity = t.connections * opacity("connect") * 0.95;
+    this.connectionMaterial.opacity =
+      t.connections *
+      opacity("connect") *
+      (this.state.lens === "connect" ? 0.92 : 0.65);
     this.connections.visible = t.connections > 0.005;
     this.connections.children.forEach((child) => {
       if (child instanceof THREE.Mesh) {
@@ -981,10 +1018,14 @@ export class AtlasEngine {
     });
     this.waterLineMaterial.opacity =
       t.connections *
-      (this.state.lens === "all" || this.state.lens === "water" ? 1 : 0.25);
+      (this.state.lens === "water"
+        ? 0.92
+        : this.state.lens === "all"
+          ? 0.72
+          : 0.2);
     this.waterfront.visible = t.connections > 0.005;
     this.siteMaterial.opacity =
-      this.state.lens === "all" ? 0.55 - t.neighbourhood * 0.3 : 0.12;
+      (1 - t.connections) * (this.state.lens === "all" ? 0.55 : 0.12);
     this.contextMaterial.color.lerp(
       this.color.set(this.state.lens === "all" ? PALETTE.building : "#889bb3"),
       damping,
@@ -999,6 +1040,8 @@ export class AtlasEngine {
       .toArray()
       .map((n) => n.toFixed(1))
       .join(",");
+    this.mount.dataset.fov = this.camera.fov.toFixed(2);
+    this.mount.dataset.frameHeight = String(this.frameHeight);
     this.options.anchors.forEach((anchor) => {
       this.markerProjection
         .set(anchor.point[0], anchor.height, anchor.point[1])

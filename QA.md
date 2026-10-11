@@ -2,7 +2,30 @@
 
 Windows / local production preview, 10 October 2026. This supersedes the prior prototype's verification. Publication checks for the subsequently authorized release are recorded below.
 
-## Completed checks
+## Focused iPhone polish — 10 October 2026
+
+The existing composition, typography, geographic data, story timings and exploration remain intact. This follow-up replaces symbol controls with inline SVG, directs the camera around the site after the initial approach, adds restrained environmental colour, and tidies route joins / tree placement. Conceptual framing remains in About & sources; persistent concept notices have been removed from the main experience.
+
+| Check                      | Result / evidence                                                                                                                                                                                                                                              |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tests                      | PASS; 18 tests across four files, including the existing narrative tests, monotonic camera distance, site-scale orbit, continuous camera velocity, reverse traversal, equivalent 60 / 120Hz interpolation, viewport scoring / projection and route geometry    |
+| Production build           | PASS; TypeScript and Vite, no chunk warning                                                                                                                                                                                                                    |
+| Desktop                    | PASS at 1440 × 900; opening, continuous traversal, public realm, future and exploration / connection selection inspected                                                                                                                                       |
+| Phone layout               | PASS at 390 × 844, 375 × 667 and 320 × 640; opening, story / exploration and the longest connection copy inspected; no horizontal overflow observed                                                                                                            |
+| Height-only phone resize   | PASS at 390 × 844 → 390 × 720 → 390 × 844; scrollY 2532, progress 0.441, main height 6583 and projected landmark positions retained. Camera coordinates settled within 0.1m; projection adjusted field of view from 43° to 37.15° without changing world scale |
+| Width / orientation resize | PASS; reverse traversal followed by phone-to-desktop resizing retained normalized progress 0.706                                                                                                                                                               |
+| Icons / factual framing    | PASS; top-right arrow is an SVG path, all graphical Unicode controls replaced, visible concept notices removed, complete independence / future uncertainty retained in About                                                                                   |
+| Accessibility regression   | PASS; About focus / Escape / focus return, stationary camera across scroll in manual reduced-motion mode, and geographic 2D alternative                                                                                                                        |
+| Application console        | PASS; no warnings / errors captured during the production-preview desktop and phone checks                                                                                                                                                                     |
+| Sharing image              | Updated from the actual polished desktop opening capture; JPEG 1430 × 894                                                                                                                                                                                      |
+
+Native scroll remains uncaptured. Phone scroll geometry is measured against the stable small viewport and retained during height-only changes; only width / orientation changes rescore it. Rendering adjusts to the visible canvas height while preserving geographic scale and vertical anchors. Touch pointers cannot initiate desktop orbit input, including landscape touch devices. The camera uses one time-based progress filter rather than a second Cartesian position filter; its opening reveal is monotonic when the visitor scrolls immediately.
+
+The viewport choice follows [WebKit's viewport-unit documentation](https://webkit.org/blog/12445/new-webkit-features-in-safari-15-4/). Refresh-rate-independent interpolation follows the timestamp guidance in [MDN's requestAnimationFrame documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame). These are implementation choices, not evidence of physical Safari testing.
+
+**NOT RUN:** physical iPhone Safari / Chrome iOS, actual browser-toolbar animation, real touch momentum / high-refresh hardware, landscape touch gesture routing on a device, battery / FPS benchmarks, Firefox and forced GPU loss. Phone checks use browser viewport overrides on Windows. The user supplied the real iPhone observations; no hardware validation is claimed here. Final release SHA, Pages workflow and live asset / browser evidence are recorded in the calling workspace's outputs/Delivery.md after publication.
+
+## Original redesign checks
 
 | Check                     | Result / evidence                                                                                                                                                           |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -25,7 +48,7 @@ Windows / local production preview, 10 October 2026. This supersedes the prior p
 | Portable preview / assets | PASS; actual Windows launcher started loopback port 4174. All 23 assets HTTP 200 and byte-identical to dist; missing files 404 and paths outside dist 403                   |
 | Sharing image             | PASS; actual desktop capture, JPEG 1430 × 894, matches metadata and MIME type                                                                                               |
 
-## Size and rendering
+## Original redesign size and rendering
 
 Complete dist: 6,040,978 bytes, including both aerial resolutions, fallback fonts, licences and sharing image. JavaScript plus JSON total 1,018,837 bytes gzipped; this is a compression calculation, not a measured phone-network transfer. Desktop aerial: 1,451,684 bytes. Phone aerial: 545,616 bytes. Main / lazy engine JavaScript gzip sizes are approximately 78 / 152 KB. No build chunk warning.
 

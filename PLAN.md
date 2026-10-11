@@ -13,7 +13,7 @@ One continuous world, with a native-scroll score rather than stacked page sectio
 3. **Today.** Show the gap between downtown and the water: surface land, viaducts, surrounding blocks and Creekside Park.
 4. **Reconnection.** Infrastructure recedes, a street network reaches the water, and paths physically trace the relationships envisioned in City policy.
 5. **Public life.** The park extension and waterfront take precedence over buildings.
-6. **An open future.** Restrained translucent volumes suggest mixed uses, not approved architecture. State the application is on hold and the image is conceptual.
+6. **An open future.** Restrained translucent volumes suggest mixed uses. About & sources states that the application is on hold and explains the conceptual interpretation.
 7. **Explore.** Four spatial lenses reveal waterfront, public realm, connections and neighbourhood. Comparison returns the same world to its existing state. A small closing line explains that this map can deepen as the place takes shape.
 
 ## Interaction thesis
@@ -46,3 +46,5 @@ Blender and glTF remain valid for later architectural assets. An installation is
 4. Review opening / today / reconnection / future / exploration on desktop and phone. Revise weak compositions.
 5. Verify reverse scroll, keyboard navigation, lenses, comparison, focus management, reduced motion, WebGL fallback, resize and resource lifecycle. Record PASS / FAIL / NOT RUN honestly.
 6. Commit a clean result on the redesign branch and provide a concise delivery report. Publish only with explicit user direction; that direction was received and the completed redesign was released on 10 October 2026.
+
+The subsequently authorized iPhone polish preserves this plan. Its camera approaches once, then orbits the site with modest lateral / angle changes; city / water / vegetation materials receive restrained separation. Stable mobile scroll geometry and projection prevent browser-height changes from appearing as a new camera move. SVG controls and quieter geographic route / tree treatment complete the narrow polish; factual framing resides in About & sources. Verification is recorded in QA.md.
