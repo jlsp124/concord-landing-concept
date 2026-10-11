@@ -45,4 +45,4 @@ Blender and glTF remain valid for later architectural assets. An installation is
 3. Build the continuous story, camera, transformed world and quiet exploration.
 4. Review opening / today / reconnection / future / exploration on desktop and phone. Revise weak compositions.
 5. Verify reverse scroll, keyboard navigation, lenses, comparison, focus management, reduced motion, WebGL fallback, resize and resource lifecycle. Record PASS / FAIL / NOT RUN honestly.
-6. Commit a clean result on the redesign branch and provide a concise delivery report. Do not alter the live main deployment.
+6. Commit a clean result on the redesign branch and provide a concise delivery report. Publish only with explicit user direction; that direction was received and the completed redesign was released on 10 October 2026.

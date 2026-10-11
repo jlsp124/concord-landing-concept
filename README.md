@@ -63,8 +63,8 @@ Direct Three.js WebGL fits the custom materials and fallback needs. Context geom
 
 ## Git and publication
 
-The previous implementation is preserved at annotated tag `baseline/windows-handoff-2026-10-10`, commit `06972a8`. The redesign lives on `redesign/windows-spatial-experience`.
+The previous implementation is preserved at annotated tag `baseline/windows-handoff-2026-10-10`, commit `06972a8`. The completed redesign at `511c8cb` remains on `redesign/windows-spatial-experience` and was fast-forwarded into `main` without replacing work or rewriting history.
 
-The [existing public demo](https://jlsp124.github.io/concord-landing-concept/) remains the prior implementation until a deliberate release. This redesign does not change the live site. Pushing to `main` triggers the existing Pages deployment workflow; pull requests validate without publishing. Vite's base is `/concord-landing-concept/`.
+The [live experience](https://jlsp124.github.io/concord-landing-concept/) now serves the continuous False Creek redesign, published with explicit user direction on 10 October 2026. Pages deployment, live assets, the new opening, native story traversal and desktop / emulated phone exploration were verified; see [QA.md](QA.md). Pushing to `main` triggers the existing Pages deployment workflow; pull requests validate without publishing. Vite's base is `/concord-landing-concept/`.
 
 HTML includes `noindex, nofollow`; this discourages indexing and does not provide access control. Original code is MIT licensed. City data, GeoBC data and local fonts retain their respective licences and attribution.

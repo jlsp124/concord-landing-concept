@@ -1,6 +1,6 @@
 # Redesign verification
 
-Windows / local production preview, 10 October 2026. This supersedes the prior prototype's verification; public deployment remains the baseline.
+Windows / local production preview, 10 October 2026. This supersedes the prior prototype's verification. Publication checks for the subsequently authorized release are recorded below.
 
 ## Completed checks
 
@@ -35,4 +35,16 @@ Screenshots are actual browser captures. Viewport dimensions above describe the 
 
 ## Limits
 
-Physical phone hardware, Safari, Firefox, GPU benchmarking, an actual device reduced-motion preference and forced GPU-loss recovery are **NOT RUN**. Manual accessibility controls and 2D mode were verified separately. Historical geography / coarse roof bands are not survey geometry; future overlays remain schematic. No production deployment was performed. Main and its public demo retain the baseline implementation.
+Physical phone hardware, Safari, Firefox, GPU benchmarking, an actual device reduced-motion preference and forced GPU-loss recovery are **NOT RUN**. Manual accessibility controls and 2D mode were verified separately. Historical geography / coarse roof bands are not survey geometry; future overlays remain schematic.
+
+## Authorized publication — 10 October 2026
+
+Origin was verified as `jlsp124/concord-landing-concept`, then fetched before integration. Remote main had no newer commits. Main fast-forwarded from the preserved baseline to completed redesign `511c8cb4459cd23e23e8033a07d1c77f3baa5e4e`; normal push succeeded without force. The build and all eight tests passed again locally and in GitHub Actions.
+
+[Pages run 38097084093](https://github.com/jlsp124/concord-landing-concept/actions/runs/38097084093) completed with both build and deployment successful for that exact commit. The `github-pages` deployment also reported success with the correct public URL.
+
+All 23 live assets returned HTTP 200 and matched the downloaded GitHub Actions Pages artifact byte for byte. Comparing with the Windows dist first found only line-ending differences in the two font licence files; the Linux artifact confirmed the deployed bytes exactly. No production asset failure was found.
+
+The [live site](https://jlsp124.github.io/concord-landing-concept/) was opened in the browser. The new `CONCORD LANDING / The final chapter` opening and real False Creek model appeared. Native forward and reverse scrolling changed the camera and editorial story within the same world. Desktop connection selection, existing / possible-future comparison and reset worked. Phone checks at viewport overrides 390 × 844 and 320 × 640 confirmed the opening, narrative and responsive composition; exploration and comparison were exercised at 390 × 844. The page had no horizontal overflow at either phone size. Captured application console warnings / errors were empty.
+
+The calling workspace's outputs folder includes live desktop / future / phone screenshots and `Live-Asset-Verification.json`. Follow-up publication documentation does not change the application or assets. Physical phone and alternate-browser limitations above still apply.
