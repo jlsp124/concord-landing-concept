@@ -776,7 +776,8 @@ h2 {
     --gutter: 26px;
   }
   .story-scroll {
-    height: 780svh;
+    /* Give native touch momentum roughly three times the story travel. */
+    height: 2200svh;
   }
   .masthead {
     padding: 20px var(--gutter);

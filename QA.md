@@ -2,6 +2,14 @@
 
 Windows / local production preview, 10 October 2026. This supersedes the prior prototype's verification. Publication checks for the subsequently authorized release are recorded below.
 
+## Mobile pacing and camera clarification — 10 October 2026
+
+Mobile native scroll travel is now 21 small-viewport heights instead of 6.8 (about 3.1×). At 390 × 844, total travel measured 17,724px; an 8-screen / 6,752px scroll reached progress 0.381, within the existing-site beat, rather than exploration. Continue still reached exploration. Desktop scroll distance is unchanged.
+
+Camera distance variation is restored alongside a broader orbit and changes in viewing height: close approach to the existing site, higher / wider street-network view, lower / closer waterfront view, then a higher future overview. The established opening / exploration views and focal anchors remain intact. The camera regression now checks meaningful wide / close subject changes, bounded site focus, stronger angle variation and the existing continuity / reverse traversal requirements.
+
+PASS: all 18 tests, TypeScript / production build, phone camera review at 390 × 844, desktop at 1440 × 900, native forward / reverse traversal and Continue. No console warnings / errors captured. Physical iPhone momentum remains NOT RUN; the long-scroll check is a Windows browser viewport override.
+
 ## Focused iPhone polish — 10 October 2026
 
 The existing composition, typography, geographic data, story timings and exploration remain intact. This follow-up replaces symbol controls with inline SVG, directs the camera around the site after the initial approach, adds restrained environmental colour, and tidies route joins / tree placement. Conceptual framing remains in About & sources; persistent concept notices have been removed from the main experience.

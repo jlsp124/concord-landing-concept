@@ -7,7 +7,7 @@ A cinematic, native-scroll interaction study of Northeast False Creek becoming a
 ## Experience
 
 - Scroll normally, use the editorial Continue control, or choose the optional 68-second guided journey. Direct scroll / navigation input stops autoplay. There is no wheel capture.
-- A choreographed perspective camera approaches from city to site, then reveals the place through a gentle orbit and lateral movement. Viaducts recede, routes appear, the waterfront / park expands and pale conceptual zones emerge. Reverse scrolling reverses the same changes.
+- A choreographed perspective camera approaches from city to site, then combines orbit / lateral movement with deliberate close, wide, low and elevated views. Mobile scroll travel is longer so touch momentum advances less of the story. Viaducts recede, routes appear, the waterfront / park expands and pale conceptual zones emerge. Reverse scrolling reverses the same changes.
 - After the story, explore waterfront, public realm, connections and neighbourhood. Compare existing context with the possible future in the same world.
 - Desktop exploration supports bounded dragging, arrows, plus / minus and Home reset. Phones retain a guided composition and simpler controls.
 - About & sources contains the independent-concept framing, provenance, a readable story, still-camera / reduced-motion mode and a 2D geographic alternative. System reduced-motion preference is respected. WebGL failure also falls back to 2D. Controls use inline SVG; mobile scroll scoring and camera framing stay stable during height-only viewport changes.

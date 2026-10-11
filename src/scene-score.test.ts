@@ -55,35 +55,41 @@ describe("geographic film continuity", () => {
       expect(phone.position[1]).toBeGreaterThan(desktop.position[1]);
     }
   });
-  it("approaches once and holds site scale while orbiting, on desktop and portrait", () => {
+  it("varies distance and angle to reveal each subject while keeping the site anchored", () => {
     for (const mobile of [false, true]) {
-      let previousRadius = Infinity;
-      let previousAngle = -Infinity;
-      let firstSiteRadius = 0;
+      const radiusOf = (t: number) => {
+        const pose = cameraAt(t, mobile);
+        return Math.hypot(...pose.position.map((v, j) => v - pose.target[j]));
+      };
+      const angles = (t: number) => {
+        const pose = cameraAt(t, mobile);
+        const offset = pose.position.map((v, j) => v - pose.target[j]);
+        return [
+          Math.atan2(offset[0], offset[2]),
+          Math.asin(offset[1] / radiusOf(t)),
+        ];
+      };
+      let approachRadius = Infinity;
       for (let i = 0; i <= 1000; i++) {
         const pose = cameraAt(i / 1000, mobile);
-        const offset = pose.position.map((v, j) => v - pose.target[j]);
-        const radius = Math.hypot(...offset);
-        expect(radius).toBeLessThanOrEqual(previousRadius + 0.000001);
-        previousRadius = radius;
+        const radius = radiusOf(i / 1000);
+        if (i <= 340) {
+          expect(radius).toBeLessThanOrEqual(approachRadius + 0.000001);
+          approachRadius = radius;
+        }
         if (i >= 340) {
-          if (!firstSiteRadius) firstSiteRadius = radius;
-          expect(radius).toBeGreaterThan(firstSiteRadius * 0.9);
-          const angle = Math.atan2(offset[0], offset[2]);
-          expect(angle).toBeGreaterThanOrEqual(previousAngle - 0.000001);
-          previousAngle = angle;
+          expect(radius).toBeGreaterThanOrEqual(radiusOf(0.69) - 0.000001);
+          expect(radius).toBeLessThanOrEqual(radiusOf(0.52) + 0.000001);
           expect(pose.target[0]).toBeGreaterThanOrEqual(30 - 0.000001);
           expect(pose.target[0]).toBeLessThanOrEqual(90 + 0.000001);
         }
       }
-      const entry = cameraAt(0.34, mobile),
-        end = cameraAt(1, mobile);
-      const angle = (pose: typeof entry) =>
-        Math.atan2(
-          pose.position[0] - pose.target[0],
-          pose.position[2] - pose.target[2],
-        );
-      expect(angle(end) - angle(entry)).toBeGreaterThan(0.3);
+      // Read the street network wide, enter the park, then reveal the future.
+      expect(radiusOf(0.52)).toBeGreaterThan(radiusOf(0.34) * 1.2);
+      expect(radiusOf(0.69)).toBeLessThan(radiusOf(0.52) * 0.8);
+      expect(radiusOf(0.83)).toBeGreaterThan(radiusOf(0.69) * 1.2);
+      expect(angles(0.83)[0] - angles(0.34)[0]).toBeGreaterThan(0.5);
+      expect(angles(0.52)[1] - angles(0.69)[1]).toBeGreaterThan(0.18);
     }
   });
   it("preserves opening and exploration framing and continuous velocity at joins", () => {

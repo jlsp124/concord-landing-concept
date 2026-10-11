@@ -52,8 +52,9 @@ function poseOf(orbit: Omit<Orbit, "at">): CameraPose {
   };
 }
 
-// Keep the established opening and exploration compositions. Approach the site
-// once, then reveal it with a slow eastward orbit rather than repeated dollies.
+// Keep the established opening and exploration compositions. Each change in
+// distance has a subject: approach the site, widen to read the connections,
+// move lower and closer to the waterfront, then rise to reveal the future.
 const score: Orbit[] = [
   orbitOf({
     at: 0,
@@ -71,7 +72,7 @@ const score: Orbit[] = [
   },
   {
     at: 0.34,
-    radius: 1530,
+    radius: 1400,
     azimuth: radians(12),
     elevation: radians(22),
     target: [40, 10, -170],
@@ -79,25 +80,25 @@ const score: Orbit[] = [
   },
   {
     at: 0.52,
-    radius: 1510,
-    azimuth: radians(20),
-    elevation: radians(22),
+    radius: 1750,
+    azimuth: radians(28),
+    elevation: radians(31),
     target: [65, 12, -155],
     fov: 43,
   },
   {
     at: 0.69,
-    radius: 1485,
-    azimuth: radians(27),
-    elevation: radians(18),
+    radius: 1280,
+    azimuth: radians(43),
+    elevation: radians(19),
     target: [90, 10, -115],
     fov: 43,
   },
   {
     at: 0.83,
-    radius: 1470,
-    azimuth: radians(31),
-    elevation: radians(21),
+    radius: 1670,
+    azimuth: radians(47),
+    elevation: radians(32),
     target: [55, 8, -140],
     fov: 43,
   },
