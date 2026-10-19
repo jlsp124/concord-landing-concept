@@ -1,29 +1,29 @@
-# Concord Landing — The final chapter
+# Concord Landing — concept
 
-A cinematic, native-scroll interaction study of Northeast False Creek becoming a neighbourhood. One continuous geographic world moves from city context to the site, infrastructure, reconnection, public space and an explicitly schematic future. Exploration follows the story.
+An interactive 3D concept for Northeast False Creek in Vancouver. I made it as a way to explore the area, move through the site, and show how the waterfront and surrounding connections could change over time.
 
-**Independent concept.** Not an official Concord Pacific representation or an approved development visualization. The [811 Carrall / Sub-area 6C application](https://www.shapeyourcity.ca/811-carrall-st) was **on hold** when checked on 10 October 2026. No construction schedule, approved tower design, homes for sale or availability is implied.
+**Independent concept.** This is not an official Concord Pacific project or an approved development visualization. The 811 Carrall / Sub-area 6C application was on hold when I last checked it on October 10, 2026, so the future buildings shown here are intentionally schematic.
 
-## Experience
+[Open the live project](https://jlsp124.github.io/concord-landing-concept/)
 
-- Scroll normally, use the editorial Continue control, or choose the optional 68-second guided journey. Direct scroll / navigation input stops autoplay. There is no wheel capture.
-- A choreographed perspective camera approaches from city to site, then combines orbit / lateral movement with deliberate close, wide, low and elevated views. Mobile scroll travel is longer so touch momentum advances less of the story. Viaducts recede, routes appear, the waterfront / park expands and pale conceptual zones emerge. Reverse scrolling reverses the same changes.
-- After the story, explore waterfront, public realm, connections and neighbourhood. Compare existing context with the possible future in the same world.
-- Desktop exploration supports bounded dragging, arrows, plus / minus and Home reset. Phones retain a guided composition and simpler controls.
-- About & sources contains the independent-concept framing, provenance, a readable story, still-camera / reduced-motion mode and a 2D geographic alternative. System reduced-motion preference is respected. WebGL failure also falls back to 2D. Controls use inline SVG; mobile scroll scoring and camera framing stay stable during height-only viewport changes.
+## What it does
 
-The real city context uses cropped City of Vancouver geography and 2022 aerial imagery, plus generalized GeoBC 2025 relative roof-height estimates. Dataset dates differ; this is not a complete current survey. The pale future material is intentionally distinct from existing city forms. See [SOURCES.md](SOURCES.md).
+- Scroll through a continuous 3D view of Northeast False Creek.
+- Move from the wider city context into the site and waterfront.
+- Explore public space, connections, and the possible future layout.
+- Switch to a simpler 2D view if WebGL is unavailable.
+- Respect reduced-motion settings and work on both desktop and mobile.
+
+The existing-city context uses City of Vancouver geographic data, aerial imagery, and GeoBC height estimates. The future material is separate from the real city data and should not be read as an approved design. See [SOURCES.md](SOURCES.md) for the source list.
 
 ## Run locally
-
-Node 24 was used for this Windows build. Use a Node release supported by the locked Vite version.
 
 ```powershell
 npm ci
 npm run dev
 ```
 
-Open the printed loopback URL with `/concord-landing-concept/`. Both development and preview default to `127.0.0.1`.
+Then open the local URL printed by Vite. To run the checks and production build:
 
 ```powershell
 npm test
@@ -31,9 +31,7 @@ npm run build
 npm run preview
 ```
 
-Production assets are local: no map-service requests, account, secrets, telemetry or backend. Node / Python tools and GIS intermediates remain project-local. Python is only needed to regenerate geography, not to build or view the committed scene.
-
-After building, `Start-Preview.cmd` offers a dependency-free static preview on loopback port 4174 using the installed Node runtime. Open the printed URL and keep its terminal open; Ctrl+C stops it. The same launcher and compiled assets are included in the portable delivery package.
+Python is only needed if you want to regenerate the geographic data:
 
 ```powershell
 python -m venv .venv
@@ -42,30 +40,15 @@ python -m venv .venv
 .\.venv\Scripts\python.exe scripts/prepare-context.py
 ```
 
-The preparation scripts crop before generating assets, bound download / tile sizes and check free space. Raw files go to ignored `source-assets/raw/`. The context manifest records source tile hashes, CRS and algorithm. Review dataset dates and live planning status before refreshing public claims.
+## Project structure
 
-## Structure and decisions
+- `src/atlas-engine.ts` — Three.js world and rendering
+- `src/SpatialScene.tsx` — scene lifecycle and 2D fallback
+- `src/scene-score.ts` — camera/story timing
+- `src/narrative.ts` — paths, zones, and exploration states
+- `src/App.tsx` — interface and interaction
+- `public/data/` — local geographic data used by the project
 
-| File                                              | Responsibility                                                                       |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `src/scene-score.ts`                              | Pure geographic camera score, editorial beats and story-change timing                |
-| `src/scroll-geometry.ts`, `src/scene-geometry.ts` | Stable native-scroll scoring and joined route geometry / tree clearances             |
-| `src/narrative.ts`                                | Conceptual zones / paths, exploration lenses and reversible layer timing             |
-| `src/atlas-engine.ts`                             | Three.js world, materials, demand rendering, quality scaling and bounded exploration |
-| `src/SpatialScene.tsx`                            | Lazy model lifecycle, HTML place labels and 2D geographic fallback                   |
-| `src/App.tsx`, `src/style.css`                    | Native scroll, sparse editorial composition, responsive exploration and sources      |
-| `public/data/`                                    | Committed local geographic / height / aerial derivatives and provenance              |
-| [PLAN.md](PLAN.md)                                | Creative thesis, acceptance and implementation choices                               |
-| [research/RESEARCH.md](research/RESEARCH.md)      | Primary-source research, reference observations and decisions                        |
-| [research/STATUS.md](research/STATUS.md)          | Resumable work checkpoint                                                            |
-| [QA.md](QA.md)                                    | Actual verification and untested limits                                              |
+More detail is in [PLAN.md](PLAN.md), [SOURCES.md](SOURCES.md), and [QA.md](QA.md).
 
-Direct Three.js WebGL fits the custom materials and fallback needs. Context geometry is merged; trees are instanced; DPR is capped and can decrease under sustained frame pressure. Rendering stops when idle or hidden. Future detailed architectural assets can enter through an optimized glTF pipeline without replacing the narrative system.
-
-## Git and publication
-
-The previous implementation is preserved at annotated tag `baseline/windows-handoff-2026-10-10`, commit `06972a8`. The completed redesign at `511c8cb` remains on `redesign/windows-spatial-experience` and was fast-forwarded into `main` without replacing work or rewriting history.
-
-The [live experience](https://jlsp124.github.io/concord-landing-concept/) now serves the continuous False Creek redesign, published with explicit user direction on 10 October 2026. Pages deployment, live assets, the new opening, native story traversal and desktop / emulated phone exploration were verified; see [QA.md](QA.md). Pushing to `main` triggers the existing Pages deployment workflow; pull requests validate without publishing. Vite's base is `/concord-landing-concept/`.
-
-HTML includes `noindex, nofollow`; this discourages indexing and does not provide access control. Original code is MIT licensed. City data, GeoBC data and local fonts retain their respective licences and attribution.
+The site is published through GitHub Pages. Original code is MIT licensed; source datasets and fonts keep their own licences and attribution.
